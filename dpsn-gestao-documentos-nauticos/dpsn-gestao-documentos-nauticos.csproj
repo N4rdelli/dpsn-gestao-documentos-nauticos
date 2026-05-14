@@ -11,4 +11,7 @@
     <PackageReference Include="MongoDB.Driver" Version="3.8.0" />
   </ItemGroup>
 
+	<Target Name="Tailwind" BeforeTargets="Build">
+		<Exec Command="npx @tailwindcss/cli -i ./wwwroot/css/app.css -o ./wwwroot/css/site.css" />
+	</Target>
 </Project>

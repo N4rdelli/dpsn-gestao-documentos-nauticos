@@ -1,19 +1,10 @@
+using dpsn_gestao_documentos_nauticos.Data;
 using dpsn_gestao_documentos_nauticos.Models;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Configuura o mapeamento da conexão com o banco de dados
-//builder.Services.Configure<MongoDBSettings>(builder.Configuration.GetSection("'MongoDBSettings"));
-
-//// Registra o IMongoClient como Singleton
-//builder.Services.AddSingleton<IMongoClient>(sp =>
-//{
-//    var settings = sp.GetRequiredService<IOptions<MongoDBSettings>>().Value;
-//    return new MongoClient(settings.ConnectionString);
-//});
 
 // Configurações do Banco
 builder.Services.Configure<MongoDbSettings>(
@@ -31,6 +22,8 @@ builder.Services.AddSingleton<IMongoClient>(sp => {
 
     return new MongoClient(settings);
 });
+
+builder.Services.AddScoped<MongoDbContext>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
