@@ -7,4 +7,8 @@
     <RootNamespace>dpsn_gestao_documentos_nauticos</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" Version="3.8.0" />
+  </ItemGroup>
+
 </Project>

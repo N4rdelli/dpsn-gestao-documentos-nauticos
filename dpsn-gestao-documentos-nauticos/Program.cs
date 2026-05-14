@@ -1,9 +1,56 @@
+using dpsn_gestao_documentos_nauticos.Models;
+using Microsoft.Extensions.Options;
+using MongoDB.Bson;
+using MongoDB.Driver;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Configuura o mapeamento da conexão com o banco de dados
+//builder.Services.Configure<MongoDBSettings>(builder.Configuration.GetSection("'MongoDBSettings"));
+
+//// Registra o IMongoClient como Singleton
+//builder.Services.AddSingleton<IMongoClient>(sp =>
+//{
+//    var settings = sp.GetRequiredService<IOptions<MongoDBSettings>>().Value;
+//    return new MongoClient(settings.ConnectionString);
+//});
+
+// Configurações do Banco
+builder.Services.Configure<MongoDbSettings>(
+    builder.Configuration.GetSection("MongoDbSettings"));
+
+// Registro do MongoClient customizado
+builder.Services.AddSingleton<IMongoClient>(sp => {
+    var mongoSettings = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value;
+
+    // Converte a string para o objeto de configurações
+    var settings = MongoClientSettings.FromConnectionString(mongoSettings.ConnectionString);
+
+    // Define a Stable API para garantir compatibilidade futura
+    settings.ServerApi = new ServerApi(ServerApiVersion.V1);
+
+    return new MongoClient(settings);
+});
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
+
+// Bloco de teste de conexão opcional (pinga o banco pra ver se deu certo)
+using (var scope = app.Services.CreateScope())
+{
+    var client = scope.ServiceProvider.GetRequiredService<IMongoClient>();
+    try
+    {
+        client.GetDatabase("admin").RunCommand<BsonDocument>(new BsonDocument("ping", 1));
+        Console.WriteLine("Conexão com MongoDB Atlas estabelecida com sucesso!");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Erro ao conectar no MongoDB: {ex.Message}");
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
