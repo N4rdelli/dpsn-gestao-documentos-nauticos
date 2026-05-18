@@ -1,5 +1,6 @@
 using dpsn_gestao_documentos_nauticos.Data;
 using dpsn_gestao_documentos_nauticos.Models;
+using dpsn_gestao_documentos_nauticos.Seeds;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -28,6 +29,24 @@ builder.Services.AddScoped<MongoDbContext>();
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+
+// Configuração do Identity
+var mongoSettings = builder.Configuration.GetSection("MongoDbSettings")
+    .Get<MongoDbSettings>();
+builder.Services.AddIdentity<ApplicationUser, ApplicationRole>
+    (options =>
+    {
+        options.Password.RequiredLength = 6;
+        options.Password.RequireNonAlphanumeric = true;
+        options.Password.RequireDigit = true;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireLowercase = true;
+    })
+    .AddMongoDbStores<ApplicationUser, ApplicationRole, string>(
+        mongoSettings.ConnectionString, mongoSettings.DatabaseName);
+builder.Services.AddRazorPages();
+
+
 var app = builder.Build();
 
 // Bloco de teste de conexão opcional (pinga o banco pra ver se deu certo)
@@ -45,6 +64,21 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+
+// Seeds
+using (var Scope = app.Services.CreateScope())
+{
+    var services = Scope.ServiceProvider;
+    try
+    {
+        await IdentitySeeds.SeedRolesAndUser(services, "Admin@123");
+
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Erro Seed: {ex.Message}");
+    }
+}
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -55,7 +89,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
-
+//acrescentar app.UseAuthentication() antes do app.UseAuthorization();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
