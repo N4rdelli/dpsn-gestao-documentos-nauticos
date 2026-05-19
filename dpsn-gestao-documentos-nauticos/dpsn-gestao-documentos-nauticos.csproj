@@ -7,4 +7,12 @@
     <RootNamespace>dpsn_gestao_documentos_nauticos</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="AspNetCore.Identity.MongoDbCore" Version="7.0.0" />
+    <PackageReference Include="MongoDB.Driver" Version="3.8.0" />
+  </ItemGroup>
+
+	<Target Name="Tailwind" BeforeTargets="Build">
+		<Exec Command="npx @tailwindcss/cli -i ./wwwroot/css/app.css -o ./wwwroot/css/site.css" />
+	</Target>
 </Project>

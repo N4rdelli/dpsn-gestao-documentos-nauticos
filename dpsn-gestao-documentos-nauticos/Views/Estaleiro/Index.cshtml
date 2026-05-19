@@ -1,0 +1,119 @@
+﻿@model IEnumerable<dpsn_gestao_documentos_nauticos.Models.Estaleiro>
+
+@{
+    ViewData["Title"] = "Página estaleiro";
+}
+
+<h1>Menu Estaleiros</h1>
+@*Mensagem de sucesso ou erro na criarção do estaleiro*@
+@if (TempData["MensagemSucesso"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i> @TempData["MensagemSucesso"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["MensagemErro"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["MensagemErro"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+<p>
+    <a asp-action="Create">Criar estaleiro</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.NomeFantasia)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.RazaoSocial)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Cnpj)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Email)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Telefone)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Endereco.Cep)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Endereco.Logradouro)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Endereco.Numero)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Endereco.Complemento)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Endereco.Bairro)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Endereco.Cidade)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Endereco.Estado)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.NomeFantasia)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.RazaoSocial)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Cnpj)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Email)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Telefone)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Endereco.Cep)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Endereco.Logradouro)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Endereco.Numero)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Endereco.Complemento)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Endereco.Bairro)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Endereco.Cidade)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Endereco.Estado)
+                </td>
+
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id.ToString()">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
