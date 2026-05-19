@@ -4,6 +4,8 @@ using dpsn_gestao_documentos_nauticos.Seeds;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,6 +47,16 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>
     .AddMongoDbStores<ApplicationUser, ApplicationRole, string>(
         mongoSettings.ConnectionString, mongoSettings.DatabaseName);
 builder.Services.AddRazorPages();
+// Configuração de cookies para manter o usuario logado
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Accounts/Login";
+    // Usuario vai ficar logado por 30 dias
+    options.ExpireTimeSpan = TimeSpan.FromDays(30);
+    // Se o usuário acessar o site faltando menos da metade do tempo para expirar,
+    // o ASP.NET renova o cookie por mais 30 dias automaticamente.
+    options.SlidingExpiration = true;
+});
 
 
 var app = builder.Build();
@@ -94,11 +106,14 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
-
+app.MapControllers().RequireAuthorization();
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    // A primeira página a ser carregada é a de login
+    pattern: "{controller=Accounts}/{action=Login}/{id?}")
+    .WithStaticAssets()
+    // Garante que o usuario esteja autenticado para acessar as rotas do controller
+    .RequireAuthorization();
 
 
 app.Run();
