@@ -1,0 +1,63 @@
+﻿@model dpsn_gestao_documentos_nauticos.ViewModel.EmbarcacaoViewModel
+
+@{
+    ViewData["Title"] = "Cadastrar Embarcação - Admin";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <h2>Cadastrar Nova Embarcação (Modo Administrador)</h2>
+    <hr />
+
+    <form asp-action="Insert" method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="mb-3">
+            <label asp-for="Nome" class="form-label"></label>
+            <input asp-for="Nome" class="form-control" />
+            <span asp-validation-for="Nome" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="NumeroInscricao" class="form-label"></label>
+            <input asp-for="NumeroInscricao" class="form-control" />
+            <span asp-validation-for="NumeroInscricao" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Tipo" class="form-label"></label>
+            <select asp-for="Tipo" class="form-select">
+                <option value="">Selecione o tipo...</option>
+                <option value="Lancha">Lancha</option>
+                <option value="Veleiro">Veleiro</option>
+                <option value="Iate">Iate</option>
+                <option value="JetSki">Jet Ski</option>
+            </select>
+            <span asp-validation-for="Tipo" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Selecione o Estaleiro Vinculado</label>
+            <select name="estaleiroSelecionado" class="form-select">
+                <option value="">-- Escolha um Estaleiro --</option>
+                @if (ViewBag.Estaleiros != null)
+                {
+                    foreach (var estaleiro in ViewBag.Estaleiros)
+                    {
+                        <option value="@estaleiro.Id">@estaleiro.Nome</option>
+                    }
+                }
+            </select>
+            <span class="text-danger">@Html.ValidationMessage("EstaleiroId")</span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Salvar no MongoDB</button>
+        <a asp-action="Select" class="btn btn-secondary">Voltar</a>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

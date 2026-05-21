@@ -1,0 +1,51 @@
+﻿@model dpsn_gestao_documentos_nauticos.Models.Embarcacao
+
+@{
+    ViewData["Title"] = "Editar Embarcação";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <h2>Atualizar Dados da Embarcação</h2>
+    <hr />
+
+    <form asp-action="Update" method="post">
+        @Html.AntiForgeryToken()
+
+        <!-- Input Oculto guardando a chave primária hexadecimal do Mongo -->
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="EstaleiroId" />
+
+        <div class="mb-3">
+            <label asp-for="Nome" class="form-label">Nome da Embarcação</label>
+            <input asp-for="Nome" class="form-control" />
+            <span asp-validation-for="Nome" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="NumInscricao" class="form-label">Número de Inscrição</label>
+            <input asp-for="NumInscricao" class="form-control" />
+            <span asp-validation-for="NumInscricao" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="TipoEmbarcacao" class="form-label">Tipo</label>
+            <select asp-for="TipoEmbarcacao" class="form-select">
+                <option value="Lancha">Lancha</option>
+                <option value="Veleiro">Veleiro</option>
+                <option value="Iate">Iate</option>
+                <option value="JetSki">Jet Ski</option>
+            </select>
+            <span asp-validation-for="TipoEmbarcacao" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+        <a asp-action="Select" asp-route-id="@Model.EstaleiroId" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
