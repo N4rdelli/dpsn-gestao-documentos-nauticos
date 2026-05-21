@@ -5,10 +5,12 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>dpsn_gestao_documentos_nauticos</RootNamespace>
+    <UserSecretsId>61fa5b06-4a56-48f8-a0f9-2d85dd2d251d</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="AspNetCore.Identity.MongoDbCore" Version="7.0.0" />
+    <PackageReference Include="MailKit" Version="4.16.0" />
     <PackageReference Include="MongoDB.Driver" Version="3.8.0" />
   </ItemGroup>
 

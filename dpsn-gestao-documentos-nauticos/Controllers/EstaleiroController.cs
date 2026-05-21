@@ -21,9 +21,23 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
 
 
         public async Task<IActionResult> Index()
-        {   
-            // Retorna todos os documentos da coleção Estaleiros
-            return View(await _context.Estaleiros.Find(u => true).ToListAsync());
+        {
+            // Criar uma lista de usuarios
+            IEnumerable<Estaleiro> estaleiros;
+            if (User.IsInRole("Admin") || User.IsInRole("Tecnologo"))
+            {
+                // Se for admin ou tecnologo, retorna a lista com todos os usuarios
+                estaleiros = await _context.Estaleiros.Find(u => true).ToListAsync();
+                return View(estaleiros);
+            }
+            // Se for estaleiro , retorna apenas os dados do proprio estaleiro logado
+            var estaleiro = await _context.Estaleiros.Find(u => u.UserName == User.Identity.Name).FirstOrDefaultAsync();
+            if (estaleiro == null)
+            {
+                return NotFound();
+            }
+            estaleiros = new List<Estaleiro> { estaleiro };
+            return View(estaleiros);
         }
         // GET: Estaleiros/Create
         public IActionResult Create()

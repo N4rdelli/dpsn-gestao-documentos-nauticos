@@ -1,11 +1,14 @@
 using dpsn_gestao_documentos_nauticos.Data;
 using dpsn_gestao_documentos_nauticos.Models;
 using dpsn_gestao_documentos_nauticos.Seeds;
+using dpsn_gestao_documentos_nauticos.Services;
+using dpsn_gestao_documentos_nauticos.Settings;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,7 +48,8 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>
         options.Password.RequireLowercase = true;
     })
     .AddMongoDbStores<ApplicationUser, ApplicationRole, string>(
-        mongoSettings.ConnectionString, mongoSettings.DatabaseName);
+        mongoSettings.ConnectionString, mongoSettings.DatabaseName)
+        .AddDefaultTokenProviders(); 
 builder.Services.AddRazorPages();
 // Configuração de cookies para manter o usuario logado
 builder.Services.ConfigureApplicationCookie(options =>
@@ -58,6 +62,10 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
 });
 
+//configuração envio de email
+// Pega os valores no appsettings.json
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddSingleton<EmailService>();
 
 var app = builder.Build();
 
