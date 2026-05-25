@@ -26,6 +26,7 @@ builder.Services.AddSingleton<IMongoClient>(sp => {
 
 builder.Services.AddScoped<MongoDbContext>();
 
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 

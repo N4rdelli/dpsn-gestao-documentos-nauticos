@@ -30,5 +30,14 @@ namespace dpsn_gestao_documentos_nauticos.Data
             }
         }
 
+        // Coleção de Embarcações no banco
+        public IMongoCollection<Embarcacao> Embarcacoes
+        {
+            get
+            {
+                return _database.GetCollection<Embarcacao>("embarcacoes");
+            }
+        }
+
     }
 }

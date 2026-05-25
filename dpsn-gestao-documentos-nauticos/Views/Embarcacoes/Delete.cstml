@@ -1,0 +1,6 @@
+﻿namespace dpsn_gestao_documentos_nauticos.Views.Embarcacoes
+{
+    public class Delete
+    {
+    }
+}
