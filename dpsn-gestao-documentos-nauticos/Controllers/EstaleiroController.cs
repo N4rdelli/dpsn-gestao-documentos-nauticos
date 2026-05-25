@@ -133,7 +133,8 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
                 RazaoSocial = estaleiro.RazaoSocial,
                 Cnpj = estaleiro.Cnpj,
                 Email = estaleiro.Email,
-                Telefone = estaleiro.Telefone
+                Telefone = estaleiro.Telefone,
+
             };
 
 
@@ -158,6 +159,8 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(string id, EstaleiroViewModel model)
         {
+            // Remove a validação da senha pois ela não é editada nesse método.
+            ModelState.Remove(nameof(model.Senha));
             if (ModelState.IsValid)
             {
                 try

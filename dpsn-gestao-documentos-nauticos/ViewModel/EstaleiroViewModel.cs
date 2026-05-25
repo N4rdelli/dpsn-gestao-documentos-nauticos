@@ -19,6 +19,7 @@ namespace dpsn_gestao_documentos_nauticos.ViewModel
         [EmailAddress(ErrorMessage = "O email deve ser válido.")]
         public string Email { get; set; }
         [DataType(DataType.Password)]
+        [Required(ErrorMessage = "Digite sua senha.")]
         public string Senha { get; set; }
         [Required(ErrorMessage = "O telefone é obrigatório.")]
         public string Telefone { get; set; }
