@@ -1,0 +1,30 @@
+﻿﻿@{
+ViewData["Title"] = "Login";
+Layout = "~/Views/Shared/_layout.cshtml";
+}
+<h1>Login</h1>
+
+@if (TempData["MensagemErro"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["MensagemErro"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+<div class="text-danger" asp-validation-summary="All"></div>
+<form asp-action="Login" asp-controller="Accounts" method="post">
+    <div class="form-group">
+        <label>E-mail</label>
+        <input type="email" name="email" class="form-control" />
+        <label>Senha:</label>
+        <input type="password" name="password" class="form-control" />
+        <button type="submit" class="btn btn-primary">Enviar</button>
+    </div>
+    <div class="form-check mb-3">
+        <input type="checkbox" name="manterConectado" id="manterConectado" value="true" class="form-check-input" />
+        <label class="form-check-label" for="manterConectado">Lembrar-me neste dispositivo</label>
+    </div>
+</form>
+<p>
+    <a asp-controller="Accounts" asp-action="ForgotPassword">Esqueci minha senha</a>
+</p>
