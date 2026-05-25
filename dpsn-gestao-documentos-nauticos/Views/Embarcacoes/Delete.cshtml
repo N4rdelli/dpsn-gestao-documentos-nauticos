@@ -1,0 +1,26 @@
+﻿@model dpsn_gestao_documentos_nauticos.Models.Embarcacao
+
+@{
+    ViewData["Title"] = "Remover Registro";
+}
+
+<div class="container mt-5" style="max-width: 550px;">
+    <div class="card border-danger shadow">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0"><i class="bi bi-exclamation-triangle-fill"></i> Atenção: Exclusão Definitiva</h5>
+        </div>
+        <div class="card-body text-center">
+            <p class="card-text fs-5">Você tem certeza absoluta de que deseja deletar a embarcação?</p>
+            <h3 class="text-danger my-3">"@Model.Nome"</h3>
+            <p class="text-muted small">Essa ação removerá o documento de forma permanente do cluster MongoDB.</p>
+            
+            <form asp-action="Delete" method="post" class="mt-4">
+                <input type="hidden" asp-for="IdEmbarcacao" />
+                <div class="d-flex justify-content-center">
+                    <a asp-action="Index" class="btn btn-secondary me-3">Não, Cancelar</a>
+                    <button type="submit" class="btn btn-danger">Sim, Confirmar Exclusão</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

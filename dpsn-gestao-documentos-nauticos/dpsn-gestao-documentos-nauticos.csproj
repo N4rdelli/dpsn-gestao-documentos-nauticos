@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -7,6 +7,11 @@
     <RootNamespace>dpsn_gestao_documentos_nauticos</RootNamespace>
     <UserSecretsId>61fa5b06-4a56-48f8-a0f9-2d85dd2d251d</UserSecretsId>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Views\Embarcacoes\Delete.cstml" />
+    <None Remove="Views\Embarcacoes\Edit.cshml" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AspNetCore.Identity.MongoDbCore" Version="7.0.0" />

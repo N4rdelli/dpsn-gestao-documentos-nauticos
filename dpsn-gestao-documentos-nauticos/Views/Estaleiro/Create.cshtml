@@ -1,91 +1,51 @@
-﻿@model dpsn_gestao_documentos_nauticos.ViewModel.EstaleiroViewModel;
+﻿@model IEnumerable<dpsn_gestao_documentos_nauticos.ViewModel.EmbarcacaoViewModel>
+
 @{
-	ViewData["Title"] = "Criar Estaleiro";
-	Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Embarcações Cadastradas";
 }
 
-<h1>Criar estaleiro</h1>
-<div class="text-danger" asp-validation-summary="All"></div>
-<form asp-action="Create">
-	<div class="form-group gap-3">
-        @if (TempData["MensagemErro"] != null)
+<h2>Frota de Embarcações</h2>
+
+<p>
+    <a asp-action="Create">Cadastrar Nova Embarcação</a>
+</p>
+
+<table border="1" cellpadding="5" cellspacing="0">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Estaleiro (Construtor)</th>
+            <th>Tipo</th>
+            <th>Área de Navegação</th>
+            <th>Comprimento</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Any())
         {
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                @TempData["MensagemErro"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
+            <tr>
+                <td colspan="6" align="center">
+                    Nenhum registro de embarcação encontrado no banco MongoDB.
+                </td>
+            </tr>
         }
-
-		<label asp-for="NomeFantasia">Nome Fantasia</label>
-		<input type="text" asp-for="NomeFantasia" class="form-control"/>
-
-		<label asp-for="RazaoSocial">Razão Social</label>
-		<input type="text" asp-for="RazaoSocial" class="form-control"/>
-
-		<label asp-for="Cnpj">CNPJ</label>
-		<input type="text" asp-for="Cnpj" class="form-control"/>
-
-		<label asp-for="Email">Email</label>
-		<input type="email" asp-for="Email" class="form-control"/>
-		<label asp-for="Senha">Senha</label>
-		<input type="password" asp-for="Senha" class="form-control"/>
-            
-		<label asp-for="Telefone">Telefone</label>
-		<input type="text" asp-for="Telefone" class="form-control"/>
-		<label asp-for="Cep">CEP</label>
-		<input type="text" asp-for="Cep" class="form-control"/>
-		<label asp-for="Logradouro">Logradouro</label>
-		<input type="text" asp-for="Logradouro" class="form-control"/>
-		<label asp-for="Numero">Número</label>
-		<input type="text" asp-for="Numero" class="form-control"/>
-		<label asp-for="Complemento">Complemento</label>
-		<input type="text" asp-for="Complemento" class="form-control"/>
-		<label asp-for="Bairro">Bairro</label>
-		<input type="text" asp-for="Bairro" class="form-control"/>
-		<label asp-for="Cidade">Cidade</label>
-		<input type="text" asp-for="Cidade" class="form-control"/>
-		<label asp-for="Estado">Estado</label>
-		<input type="text" asp-for="Estado" class="form-control"/>
-
-
-
-		<button type="submit" class="btn btn-primary">Enviar</button>
-	</div>
-</form>
-
-       @* // Dados do estaleiro
-        [Required(ErrorMessage = "O nome fantasia é obrigatório.")]
-        public string? NomeFantasia { get; set; }
-        [Required(ErrorMessage = "A razão social é obrigatória.")]
-        public string? RazaoSocial { get; set; }
-        [Required(ErrorMessage = "O CNPJ é obrigatório.")]
-        public string? Cnpj { get; set; }
-        [Required(ErrorMessage = "O email é obrigatório.")]
-        [EmailAddress(ErrorMessage = "O email deve ser válido.")]
-        public string? Email { get; set; }
-        [DataType(DataType.Password)]
-        [Required(ErrorMessage = "A senha é obrigatória.")]
-        [MinLength(6, ErrorMessage = "A senha deve conter no mínimo 6 caracteres.")]
-        // Essa diretiva garante que senha deve conter pelo menos uma letra maiúscula, uma letra minúscula, um número e um caractere especial.
-        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&].+$",
-            ErrorMessage = "A senha deve conter pelo menos uma letra maiúscula, uma letra minúscula, um número e um caractere especial.")]
-        public string? Senha { get; set; }
-        [Required(ErrorMessage = "O telefone é obrigatório.")]
-        public string? Telefone { get; set; }
-
-        // Dados de endereço
-        [Required(ErrorMessage = "O CEP é obrigatório.")]
-        [MaxLength(8, ErrorMessage = "CEP inválido.")]
-        public string? Cep { get; set; }
-        [Required(ErrorMessage = "O logradouro é obrigatório.")]
-        public string? Logradouro { get; set; }
-        [Required(ErrorMessage = "O número é obrigatório.")]
-        public string? Numero { get; set; }
-        public string? Complemento { get; set; }
-        [Required(ErrorMessage = "O bairro é obrigatório.")]
-        public string? Bairro { get; set; }
-        [Required(ErrorMessage = "A cidade é obrigatória.")]
-        public string? Cidade { get; set; }
-        [Required(ErrorMessage = "O estado é obrigatório.")]
-        public string? Estado { get; set; }*@
+        else
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td><strong>@item.Nome</strong></td>
+                    <td>@item.NomeEstaleiro</td>
+                    <td>@item.TipoEmbarcacao</td>
+                    <td>@item.AreaNavegacaoTipoServico</td>
+                    <td>@item.ComprimentoTotal.ToString("F2") m</td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.IdEmbarcacao">Editar</a> |
+                        <a asp-action="Delete" asp-route-id="@item.IdEmbarcacao">Excluir</a>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

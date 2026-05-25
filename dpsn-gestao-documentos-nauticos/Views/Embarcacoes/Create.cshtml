@@ -1,0 +1,145 @@
+﻿@model dpsn_gestao_documentos_nauticos.ViewModel.EmbarcacaoViewModel
+
+@{
+    ViewData["Title"] = "Nova Embarcação";
+}
+
+<div class="container mt-4" style="max-width: 900px;">
+    <div class="card shadow">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0"><i class="bi bi-file-earmark-plus"></i> Dados Técnicos da Embarcação</h4>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                @if (TempData["MensagemSucesso"] != null)
+                {
+                    <div class="alert alert-success">@TempData["MensagemSucesso"]</div>
+                }
+                @if (TempData["MensagemErro"] != null)
+                {
+                    <div class="alert alert-danger">@TempData["MensagemErro"]</div>
+                }
+                @if (TempData["MensagemAviso"] != null)
+                {
+                    <div class="alert alert-warning">@TempData["MensagemAviso"]</div>
+                }
+                <div class="row g-3">
+                    
+                    <div class="col-md-6">
+                        <label asp-for="EstaleiroId" class="form-label">Estaleiro Responsável</label>
+                        <select asp-for="EstaleiroId" asp-items="Model.EstaleirosDisponiveis" class="form-select">
+                            <option value="">-- Selecione o Estaleiro Parceiro --</option>
+                        </select>
+                        <span asp-validation-for="EstaleiroId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Nome" class="form-label">Nome da Embarcação</label>
+                        <input asp-for="Nome" class="form-control" placeholder="Ex: Atlantis III" />
+                        <span asp-validation-for="Nome" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="TipoEmbarcacao" class="form-label">Tipo de Embarcação</label>
+                        <input asp-for="TipoEmbarcacao" class="form-control" placeholder="Ex: Graneleiro, Iate..." />
+                        <span asp-validation-for="TipoEmbarcacao" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="MaterialCasco" class="form-label">Material do Casco</label>
+                        <input asp-for="MaterialCasco" class="form-control" placeholder="Ex: Aço Naval, Fibra..." />
+                        <span asp-validation-for="MaterialCasco" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="AreaNavegacaoTipoServico" class="form-label">Área de Navegação / Serviço</label>
+                        <input asp-for="AreaNavegacaoTipoServico" class="form-control" placeholder="Ex: Mar Aberto / Cabotagem" />
+                        <span asp-validation-for="AreaNavegacaoTipoServico" class="text-danger small"></span>
+                    </div>
+
+                    <h5 class="text-secondary mt-4 border-bottom pb-2">Dimensões e Arquitetura Naval</h5>
+
+                    <div class="col-md-3">
+                        <label asp-for="ComprimentoTotal" class="form-label">Comprimento Total (m)</label>
+                        <input asp-for="ComprimentoTotal" type="number" step="0.01" class="form-control" />
+                        <span asp-validation-for="ComprimentoTotal" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="BocaMoldada" class="form-label">Boca Moldada (m)</label>
+                        <input asp-for="BocaMoldada" type="number" step="0.01" class="form-control" />
+                        <span asp-validation-for="BocaMoldada" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="PontalMoldado" class="form-label">Pontal Moldado (m)</label>
+                        <input asp-for="PontalMoldado" type="number" step="0.01" class="form-control" />
+                        <span asp-validation-for="PontalMoldado" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="Contorno" class="form-label">Contorno (m)</label>
+                        <input asp-for="Contorno" type="number" step="0.01" class="form-control" />
+                        <span asp-validation-for="Contorno" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="CaladoMaximo" class="form-label">Calado Máximo (m)</label>
+                        <input asp-for="CaladoMaximo" type="number" step="0.01" class="form-control" />
+                        <span asp-validation-for="CaladoMaximo" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="CaladoLeve" class="form-label">Calado Leve (m)</label>
+                        <input asp-for="CaladoLeve" type="number" step="0.01" class="form-control" />
+                        <span asp-validation-for="CaladoLeve" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="ArqueacaoBruta" class="form-label">Arqueação Bruta</label>
+                        <input asp-for="ArqueacaoBruta" type="number" step="0.01" class="form-control" />
+                        <span asp-validation-for="ArqueacaoBruta" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="ArqueacaoLiquida" class="form-label">Arqueação Líquida</label>
+                        <input asp-for="ArqueacaoLiquida" type="number" step="0.01" class="form-control" />
+                        <span asp-validation-for="ArqueacaoLiquida" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="Tpb" class="form-label">TPB (Porte Bruto)</label>
+                        <input asp-for="Tpb" type="number" step="0.01" class="form-control" />
+                        <span asp-validation-for="Tpb" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="MotorizacaoMin" class="form-label">Motorização Mín (HP)</label>
+                        <input asp-for="MotorizacaoMin" type="number" class="form-control" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="MotorizacaoMax" class="form-label">Motorização Máx (HP)</label>
+                        <input asp-for="MotorizacaoMax" type="number" class="form-control" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="Lastro" class="form-label">Lastro (Opcional)</label>
+                        <input asp-for="Lastro" type="number" step="0.01" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="mt-4 border-top pt-3 d-flex justify-content-end">
+                    <a asp-action="Index" class="btn btn-secondary me-2">Voltar</a>
+                    <button type="submit" class="btn btn-success">Persistir no MongoDB</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
