@@ -1,0 +1,105 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<header class="h-20 min-h-[80px] bg-white border-b border-gray-300 px-6 flex items-center justify-between sticky top-0 z-30 shadow-sm shadow-slate-100/40 font-['Poppins']">
+
+    <div class="flex items-center gap-5 flex-1 max-w-xl">
+        <button id="sidebarToggleBtn" class="p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors focus:outline-none">
+            <i class="fa-solid fa-bars-staggered text-lg"></i>
+        </button>
+
+        <div class="relative w-full hidden sm:block">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
+                <i class="fa-solid fa-magnifying-glass text-sm"></i>
+            </span>
+            <input type="text"
+                   placeholder="Procure por embarcações, estaleiros, compradores, etc..."
+                   class="w-full bg-slate-100 border-0 rounded-lg py-2.5 pl-11 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-800/20 focus:bg-white transition-all font-light" />
+        </div>
+    </div>
+
+    <div class="flex items-center gap-4 md:gap-6">
+
+        <button class="bg-sky-800 hover:bg-sky-900 text-white px-4 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2 shadow-sm transition-all transform active:scale-95">
+            <i class="fa-solid fa-plus text-xs"></i>
+            <span class="hidden md:inline">Registrar Documento</span>
+        </button>
+
+        <button class="relative p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-50 transition-colors focus:outline-none">
+            <i class="fa-regular fa-bell text-lg"></i>
+            <span class="absolute top-2 right-2 w-2 h-2 bg-amber-500 rounded-full ring-2 ring-white"></span>
+        </button>
+
+        <div class="w-px h-6 bg-gray-300 hidden sm:block"></div>
+
+        <div class="relative">
+            <button id="profileDropdownBtn" class="flex items-center gap-3 p-1.5 rounded-lg hover:bg-slate-50 transition-all focus:outline-none group">
+
+                <div class="hidden sm:flex flex-col text-right">
+                    <span class="text-sm font-medium text-slate-900 leading-tight truncate max-w-[160px]">
+                        @User.Identity?.Name
+                    </span>
+                    <span class="text-[11px] text-slate-400 font-light">
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <text>Administrador</text>
+                        }
+                        else if (User.IsInRole("Tecnologo"))
+                        {
+
+                            <text>Tecnólogo Naval</text>
+                        }
+                        else if (User.IsInRole("Estaleiro"))
+                        {
+
+                            <text>Estaleiro</text>
+                        }
+                    </span>
+                </div>
+
+                <div class="w-9 h-9 rounded-lg bg-slate-800 text-white font-bold text-xs flex items-center justify-center shadow-sm uppercase tracking-wider">
+                    @(User.Identity?.Name?.Substring(0, 2) ?? "US")
+                </div>
+
+                <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 group-hover:text-slate-600 transition-transform duration-200" id="dropdownArrow"></i>
+            </button>
+
+            <div id="profileDropdownMenu"
+                 class="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-md py-1.5 z-50 transition-all duration-150 transform scale-95 opacity-0 pointer-events-none origin-top-right">
+
+                <div class="px-4 py-2.5 border-b border-slate-100 bg-slate-50/50 rounded-t-xl">
+                    <p class="text-xs text-slate-400 font-light">Conectado como</p>
+                    <p class="text-xs font-medium text-slate-800 truncate mt-0.5">@User.Identity?.Name</p>
+                </div>
+
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    var usuarioAtual = await UserManager.GetUserAsync(User);
+                    if (usuarioAtual != null)
+                    {
+                        <a href="@Url.Action("EditPassword", "Accounts", new { id = usuarioAtual.Id })"
+                           class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+                            <i class="fa-solid fa-key text-slate-400 text-xs"></i>
+                            Alterar Minha Senha
+                        </a>
+                    }
+                }
+
+                <a href="#" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+                    <i class="fa-regular fa-id-card text-slate-400 text-xs"></i>
+                    Ver Detalhes do Perfil
+                </a>
+
+                <hr class="border-slate-100 my-1" />
+
+                <a href="@Url.Action("Logout", "Accounts")"
+                   class="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors">
+                    <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
+                    Sair do Sistema
+                </a>
+            </div>
+        </div>
+
+    </div>
+</header>

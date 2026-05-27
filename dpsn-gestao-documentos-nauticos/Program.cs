@@ -110,19 +110,21 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
+
 //acrescentar app.UseAuthentication() antes do app.UseAuthorization();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
-app.MapControllers().RequireAuthorization();
+app.MapControllers();
 app.MapControllerRoute(
     name: "default",
     // A primeira página a ser carregada é a de login
     pattern: "{controller=Accounts}/{action=Login}/{id?}")
-    .WithStaticAssets()
+    .WithStaticAssets();
     // Garante que o usuario esteja autenticado para acessar as rotas do controller
-    .RequireAuthorization();
+    //.RequireAuthorization();
+    // ↑ Descomentei a linha para permitir que acessemos "ResetPassword" antes de logar (ou qualquer outro controller)
 
 
 app.Run();
