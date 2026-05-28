@@ -1,6 +1,7 @@
 ﻿using dpsn_gestao_documentos_nauticos.Data;
 using dpsn_gestao_documentos_nauticos.Models;
 using dpsn_gestao_documentos_nauticos.ViewModel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
@@ -8,6 +9,7 @@ using System.Numerics;
 
 namespace dpsn_gestao_documentos_nauticos.Controllers
 {
+    [Authorize(Roles = "Admin,Tecnologo")]
     public class EstaleiroController : Controller
     {
         // Criando o context do Banco de Dados
@@ -22,27 +24,18 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
 
         public async Task<IActionResult> Index()
         {
-            // Criar uma lista de usuarios
-            IEnumerable<Estaleiro> estaleiros;
-            if (User.IsInRole("Admin") || User.IsInRole("Tecnologo"))
-            {
-                // Se for admin ou tecnologo, retorna a lista com todos os usuarios
-                estaleiros = await _context.Estaleiros.Find(u => true).ToListAsync();
-                return View(estaleiros);
-            }
-            // Se for estaleiro , retorna apenas os dados do proprio estaleiro logado
-            var estaleiro = await _context.Estaleiros.Find(u => u.UserName == User.Identity.Name).FirstOrDefaultAsync();
-            if (estaleiro == null)
-            {
-                return NotFound();
-            }
-            estaleiros = new List<Estaleiro> { estaleiro };
+            // Como o controller está travado, aqui só entram Admins ou Tecnologos.
+            // Portanto, listamos sempre todos os estaleiros.
+            var estaleiros = await _context.Estaleiros.Find(u => true).ToListAsync();
             return View(estaleiros);
         }
+
         // GET: Estaleiros/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            return View();
+            // A View Create agora só precisa do formulário (EstaleiroViewModel).
+            // Se ela não renderiza mais uma tabela abaixo do formulário, mande a ViewModel vazia:
+            return View(new EstaleiroViewModel());
         }
 
         // POST: Estaleiros/Create
@@ -108,6 +101,7 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
                     Console.WriteLine(ex.Message);
                 }
             }
+
             return View(model);
         }
 
