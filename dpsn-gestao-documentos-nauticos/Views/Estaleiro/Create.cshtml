@@ -1,51 +1,176 @@
-﻿@model IEnumerable<dpsn_gestao_documentos_nauticos.ViewModel.EmbarcacaoViewModel>
+﻿@model dpsn_gestao_documentos_nauticos.ViewModel.EstaleiroViewModel
 
 @{
-    ViewData["Title"] = "Embarcações Cadastradas";
+    ViewData["Title"] = "Cadastrar Estaleiro";
 }
 
-<h2>Frota de Embarcações</h2>
+<div class="mb-8">
+    <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Novo Estaleiro Parceiro</h1>
+    <p class="text-sm text-slate-500 mt-1">Preencha os dados abaixo para registar um novo estaleiro no sistema náutico.</p>
+</div>
 
-<p>
-    <a asp-action="Create">Cadastrar Nova Embarcação</a>
-</p>
+@if (TempData["MensagemErro"] != null)
+{
+    <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg text-red-700 flex items-start space-x-2 shadow-sm animate-fade-in">
+        <svg class="w-5 h-5 mt-0.5 shrink-0 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <div>
+            <span class="font-semibold">Erro:</span> @TempData["MensagemErro"]
+            <div asp-validation-summary="ModelOnly" class="text-sm text-red-600 mt-1 list-disc list-inside"></div>
+        </div>
+    </div>
+}
 
-<table border="1" cellpadding="5" cellspacing="0">
-    <thead>
-        <tr>
-            <th>Nome</th>
-            <th>Estaleiro (Construtor)</th>
-            <th>Tipo</th>
-            <th>Área de Navegação</th>
-            <th>Comprimento</th>
-            <th>Ações</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (!Model.Any())
-        {
-            <tr>
-                <td colspan="6" align="center">
-                    Nenhum registro de embarcação encontrado no banco MongoDB.
-                </td>
-            </tr>
-        }
-        else
-        {
-            foreach (var item in Model)
-            {
-                <tr>
-                    <td><strong>@item.Nome</strong></td>
-                    <td>@item.NomeEstaleiro</td>
-                    <td>@item.TipoEmbarcacao</td>
-                    <td>@item.AreaNavegacaoTipoServico</td>
-                    <td>@item.ComprimentoTotal.ToString("F2") m</td>
-                    <td>
-                        <a asp-action="Edit" asp-route-id="@item.IdEmbarcacao">Editar</a> |
-                        <a asp-action="Delete" asp-route-id="@item.IdEmbarcacao">Excluir</a>
-                    </td>
-                </tr>
+<form asp-action="Create" method="post" class="space-y-6">
+    @Html.AntiForgeryToken()
+
+    <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+        <div class="border-b border-slate-100 pb-4 mb-5 flex items-center space-x-2">
+            <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+            </svg>
+            <h2 class="text-lg font-semibold text-slate-800">Dados Cadastrais</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="flex flex-col">
+                <label asp-for="RazaoSocial" class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Razão Social</label>
+                <input asp-for="RazaoSocial" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm" placeholder="Ex: Estaleiro Naval Atlântico S.A." />
+                <span asp-validation-for="RazaoSocial" class="text-xs text-red-500 mt-1 font-medium"></span>
+            </div>
+
+            <div class="flex flex-col">
+                <label asp-for="NomeFantasia" class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Nome Fantasia</label>
+                <input asp-for="NomeFantasia" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm" placeholder="Ex: Estaleiro Atlântico" />
+                <span asp-validation-for="NomeFantasia" class="text-xs text-red-500 mt-1 font-medium"></span>
+            </div>
+
+            <div class="flex flex-col">
+                <label asp-for="Cnpj" class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">CNPJ</label>
+                <input asp-for="Cnpj" id="txtCnpj" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm" placeholder="00.000.000/0000-00" />
+                <span asp-validation-for="Cnpj" class="text-xs text-red-500 mt-1 font-medium"></span>
+            </div>
+
+            <div class="flex flex-col">
+                <label asp-for="Telefone" class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Telefone Comercial</label>
+                <input asp-for="Telefone" id="txtTelefone" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm" placeholder="(00) 00000-0000" />
+                <span asp-validation-for="Telefone" class="text-xs text-red-500 mt-1 font-medium"></span>
+            </div>
+
+            <div class="flex flex-col">
+                <label asp-for="Email" class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">E-mail Corporativo (Login)</label>
+                <input asp-for="Email" type="email" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm" placeholder="contato@estaleiro.com" />
+                <span asp-validation-for="Email" class="text-xs text-red-500 mt-1 font-medium"></span>
+            </div>
+
+            <div class="flex flex-col">
+                <label asp-for="Senha" class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Senha de Acesso</label>
+                <input asp-for="Senha" type="password" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm" placeholder="••••••••" />
+                <span asp-validation-for="Senha" class="text-xs text-red-500 mt-1 font-medium"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+        <div class="border-b border-slate-100 pb-4 mb-5 flex items-center space-x-2">
+            <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+            <h2 class="text-lg font-semibold text-slate-800">Localização & Endereço</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-6 gap-6">
+            <div class="flex flex-col md:col-span-2">
+                <label asp-for="Cep" class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">CEP</label>
+                <div class="relative">
+                    <input asp-for="Cep" id="txtCep" maxlength="8" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm" placeholder="00000000" />
+                    <span id="cepLoading" class="hidden absolute right-3 top-3 text-xs text-slate-400 animate-pulse">Buscando...</span>
+                </div>
+                <span asp-validation-for="Cep" class="text-xs text-red-500 mt-1 font-medium"></span>
+            </div>
+
+            <div class="flex flex-col md:col-span-4">
+                <label asp-for="Logradouro" class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Logradouro (Rua/Avenida)</label>
+                <input asp-for="Logradouro" id="txtLogradouro" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm" placeholder="Rua, Av, etc." />
+                <span asp-validation-for="Logradouro" class="text-xs text-red-500 mt-1 font-medium"></span>
+            </div>
+
+            <div class="flex flex-col md:col-span-2">
+                <label asp-for="Numero" class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Número</label>
+                <input asp-for="Numero" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm" placeholder="Nº" />
+                <span asp-validation-for="Numero" class="text-xs text-red-500 mt-1 font-medium"></span>
+            </div>
+
+            <div class="flex flex-col md:col-span-4">
+                <label asp-for="Complemento" class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Complemento</label>
+                <input asp-for="Complemento" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm" placeholder="Sala, Galpão, Bloco (Opcional)" />
+                <span asp-validation-for="Complemento" class="text-xs text-red-500 mt-1 font-medium"></span>
+            </div>
+
+            <div class="flex flex-col md:col-span-2">
+                <label asp-for="Bairro" class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Bairro</label>
+                <input asp-for="Bairro" id="txtBairro" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm" placeholder="Bairro" />
+                <span asp-validation-for="Bairro" class="text-xs text-red-500 mt-1 font-medium"></span>
+            </div>
+
+            <div class="flex flex-col md:col-span-3">
+                <label asp-for="Cidade" class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Cidade</label>
+                <input asp-for="Cidade" id="txtCidade" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm" placeholder="Cidade" />
+                <span asp-validation-for="Cidade" class="text-xs text-red-500 mt-1 font-medium"></span>
+            </div>
+
+            <div class="flex flex-col md:col-span-1">
+                <label asp-for="Estado" class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">UF</label>
+                <input asp-for="Estado" id="txtEstado" maxlength="2" class="w-full px-4 py-2.5 text-center rounded-lg border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm uppercase" placeholder="SP" />
+                <span asp-validation-for="Estado" class="text-xs text-red-500 mt-1 font-medium"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex items-center justify-end space-x-3 pt-4">
+        <a asp-action="Index" class="px-5 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
+            Cancelar
+        </a>
+        <button type="submit" class="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-lg shadow-sm hover:shadow transition-all">
+            Salvar Estaleiro
+        </button>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.getElementById('txtCep').addEventListener('blur', function () {
+            var cep = this.value.replace(/\D/g, '');
+
+            if (cep.length === 8) {
+                document.getElementById('cepLoading').classList.remove('hidden');
+
+                fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.erro) {
+                            document.getElementById('txtLogradouro').value = data.logradouro;
+                            document.getElementById('txtBairro').value = data.bairro;
+                            document.getElementById('txtCidade').value = data.localidade;
+                            document.getElementById('txtEstado').value = data.uf;
+
+                            // Força a revalidação do jQuery Validation para limpar mensagens de erro antigas dos campos preenchidos
+                            var form = $("form");
+                            form.validate().element("#txtLogradouro");
+                            form.validate().element("#txtBairro");
+                            form.validate().element("#txtCidade");
+                            form.validate().element("#txtEstado");
+                        }
+                    })
+                    .catch(error => console.error('Erro ao buscar o CEP:', error))
+                    .finally(() => {
+                        document.getElementById('cepLoading').classList.add('hidden');
+                    });
             }
-        }
-    </tbody>
-</table>
+        });
+    </script>
+}

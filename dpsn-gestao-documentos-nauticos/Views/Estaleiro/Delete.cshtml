@@ -1,88 +1,59 @@
 ﻿@model dpsn_gestao_documentos_nauticos.Models.Estaleiro
 
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Remover Estaleiro";
 }
 
-<h1>Delete</h1>
-
-<h3>Tem certeza que quer deletar esse estaleiro?</h3>
-<div>
-    <h4>Estaleiro</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.NomeFantasia)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.NomeFantasia)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.RazaoSocial)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.RazaoSocial)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Cnpj)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Cnpj)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Email)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Email)
-        </dd>
-
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Telefone)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Telefone)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Endereco.Cep)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Endereco.Cep)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Endereco.Logradouro)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Endereco.Logradouro)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Endereco.Numero)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Endereco.Numero)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Endereco.Complemento)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Endereco.Complemento)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Endereco.Cidade)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Endereco.Cidade)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Endereco.Estado)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Endereco.Estado)
-        </dd>
-    </dl>
-    
-    <form asp-action="Delete">
-        <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
-    </form>
+<div class="mb-8">
+    <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Excluir Estaleiro Parceiro</h1>
+    <p class="text-sm text-slate-500">Atenção! Esta ação removerá definitivamente o acesso da empresa ao ecossistema náutico.</p>
 </div>
+
+<div class="bg-rose-50 border-l-4 border-rose-500 p-5 rounded-r-xl mb-6 shadow-sm flex items-start space-x-3">
+    <svg class="w-6 h-6 text-rose-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+    </svg>
+    <div>
+        <h3 class="text-base font-bold text-rose-800">Você tem certeza que quer deletar esse estaleiro? </h3>
+        <p class="text-sm text-rose-700/90 mt-1">A exclusão desvinculará o login do usuário e arquivará os registros. Essa operação não pode ser desfeita facilmente.</p>
+    </div>
+</div>
+
+<div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm mb-6">
+    <div class="flex items-center space-x-4 border-b border-slate-100 pb-4 mb-4">
+        <div class="w-12 h-12 bg-slate-100 text-slate-700 rounded-lg flex items-center justify-center font-bold text-base">
+            @(Model.NomeFantasia?.Substring(0, 2) ?? "ES")
+        </div>
+        <div>
+            <h4 class="font-bold text-slate-800 text-base">@Model.NomeFantasia</h4>
+            <span class="text-xs font-mono text-slate-400">CNPJ: @Model.Cnpj</span>
+        </div>
+    </div>
+
+    <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 text-sm">
+        <div>
+            <dt class="text-xs font-semibold text-slate-400 uppercase">Razão Social</dt>
+            <dd class="text-slate-800 mt-0.5">@Model.RazaoSocial</dd>
+        </div>
+        <div>
+            <dt class="text-xs font-semibold text-slate-400 uppercase">E-mail Corporativo</dt>
+            <dd class="text-slate-800 mt-0.5">@Model.Email</dd>
+        </div>
+        <div class="sm:col-span-2">
+            <dt class="text-xs font-semibold text-slate-400 uppercase">Localização Instalada</dt>
+            <dd class="text-slate-800 mt-0.5">
+                @Model.Endereco.Logradouro, @Model.Endereco.Numero - @Model.Endereco.Cidade/@Model.Endereco.Estado
+            </dd>
+        </div>
+    </dl>
+</div>
+
+<form asp-action="Delete" class="flex items-center space-x-3">
+    <input type="hidden" asp-for="Id" />
+    <a asp-action="Index" class="px-5 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
+        Cancelar, manter estaleiro
+    </a>
+    <button type="submit" class="px-5 py-2.5 text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 active:bg-rose-800 rounded-lg shadow-sm transition-all">
+        Sim, Confirmar Exclusão
+    </button>
+</form>

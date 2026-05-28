@@ -1,30 +1,83 @@
-﻿﻿@{
-ViewData["Title"] = "Login";
-Layout = "~/Views/Shared/_layout.cshtml";
+﻿@{
+    Layout = null; // Desvincula do layout global para não puxar a Navbar e Sidebar
+    ViewData["Title"] = "Login";
 }
-<h1>Login</h1>
 
-@if (TempData["MensagemErro"] != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["MensagemErro"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+<!DOCTYPE html>
+<html lang="pt-br" class="h-full bg-[#f8fafc]">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - DPSN</title>
+
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body class="h-full flex items-center justify-center p-4">
+
+    <div class="w-full max-w-md bg-white rounded-2xl border border-slate-200/80 shadow-xl p-8">
+
+        <div class="flex flex-col items-center mb-8">
+            <div class="flex items-center justify-center w-12 h-12 bg-[#0b2240] rounded-xl text-white font-bold shadow-md mb-3">
+                <i class="fa-solid fa-shield-halved text-xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-[#0b2240] tracking-tight">Acessar DPSN</h2>
+            <p class="text-xs text-slate-400 mt-1">Naval Documentation System</p>
+        </div>
+
+        @if (TempData["MensagemErro"] != null)
+        {
+            <div class="mb-4 p-3.5 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2.5 text-xs text-rose-700 font-medium">
+                <i class="fa-solid fa-circle-exclamation text-rose-500 text-sm"></i>
+                <span>@TempData["MensagemErro"]</span>
+            </div>
+        }
+
+        <div asp-validation-summary="All" class="text-xs text-rose-600 mb-4 list-none font-medium"></div>
+
+        <form asp-action="Login" asp-controller="Accounts" method="post" class="space-y-5">
+            @Html.AntiForgeryToken()
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">E-mail</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                        <i class="fa-regular fa-envelope text-sm"></i>
+                    </span>
+                    <input type="email" name="email" required
+                           placeholder="nome@empresa.com"
+                           class="w-full bg-[#f8fafc] border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-all" />
+                </div>
+            </div>
+
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider">Senha</label>
+                    <a asp-controller="Accounts" asp-action="ForgotPassword" class="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors">Esqueci minha senha</a>
+                </div>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                        <i class="fa-solid fa-lock text-sm"></i>
+                    </span>
+                    <input type="password" name="password" required
+                           placeholder="••••••••"
+                           class="w-full bg-[#f8fafc] border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-all" />
+                </div>
+            </div>
+
+            <div class="flex items-center">
+                <input type="checkbox" name="manterConectado" id="manterConectado" value="true"
+                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded-md accent-blue-600 cursor-pointer" />
+                <label for="manterConectado" class="ml-2.5 text-sm text-slate-600 select-none cursor-pointer">Lembrar-me neste dispositivo</label>
+            </div>
+
+            <button type="submit"
+                    class="w-full bg-[#0b2240] hover:bg-[#11315c] text-white py-3 px-4 rounded-xl text-sm font-semibold shadow-md shadow-blue-900/10 transition-all transform active:scale-[0.98] mt-2 flex items-center justify-center gap-2">
+                <span>Enviar</span>
+                <i class="fa-solid fa-arrow-right text-xs"></i>
+            </button>
+        </form>
     </div>
-}
-<div class="text-danger" asp-validation-summary="All"></div>
-<form asp-action="Login" asp-controller="Accounts" method="post">
-    <div class="form-group">
-        <label>E-mail</label>
-        <input type="email" name="email" class="form-control" />
-        <label>Senha:</label>
-        <input type="password" name="password" class="form-control" />
-        <button type="submit" class="btn btn-primary">Enviar</button>
-    </div>
-    <div class="form-check mb-3">
-        <input type="checkbox" name="manterConectado" id="manterConectado" value="true" class="form-check-input" />
-        <label class="form-check-label" for="manterConectado">Lembrar-me neste dispositivo</label>
-    </div>
-</form>
-<p>
-    <a asp-controller="Accounts" asp-action="ForgotPassword">Esqueci minha senha</a>
-</p>
+
+</body>
+</html>
