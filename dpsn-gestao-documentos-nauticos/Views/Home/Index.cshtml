@@ -1,17 +1,207 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+﻿@model dpsn_gestao_documentos_nauticos.ViewModel.DashboardViewModel
+@{
+    ViewData["Title"] = "Painel de Controle";
 }
 
-<h1>Home Page</h1>
-@if (TempData["MensagemSucesso"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i> @TempData["MensagemSucesso"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+<div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-2 font-['Poppins']">
+    <div>
+        <h1 class="text-2xl font-bold text-slate-950 tracking-tight">
+            @(Model.IsEstaleiro ? "Painel do Estaleiro" : "Painel de Controle")
+        </h1>
+        <p class="text-xs text-slate-500 mt-1">@DateTime.Now.ToString("dd 'de' MMMM 'de' yyyy") · Visão @(Model.IsEstaleiro ? "Restrita" : "Geral do Sistema")</p>
     </div>
+    <div class="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-3 py-1.5 rounded-full text-xs font-medium self-start md:self-auto">
+        <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+        Conectado com Sucesso
+    </div>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8 font-['Poppins'] items-stretch">
+
+    <div class="bg-white p-5 rounded-lg border border-gray-300 shadow-sm flex flex-col justify-between h-full min-h-[150px]">
+        <div class="flex items-center justify-between">
+            <div class="w-9 h-9 bg-slate-100 rounded-lg flex items-center justify-center text-slate-700">
+                <i class="fa-regular fa-file-excel text-base"></i>
+            </div>
+        </div>
+        <div class="mt-4">
+            <h3 class="text-2xl font-bold text-slate-950">@Model.TotalDocumentosAssinados</h3>
+            <p class="text-xs font-medium text-slate-900 mt-0.5">Documentos assinados</p>
+            <p class="text-[10px] text-slate-500 font-light">@(Model.IsEstaleiro ? "Pela sua organização" : "No total geral")</p>
+        </div>
+    </div>
+
+    <div class="bg-white p-5 rounded-lg border border-gray-300 shadow-sm flex flex-col justify-between h-full min-h-[150px]">
+        <div class="flex items-center justify-between">
+            <div class="w-9 h-9 bg-slate-100 rounded-lg flex items-center justify-center text-slate-700">
+                <i class="fa-regular fa-clock text-base"></i>
+            </div>
+            @if (Model.TotalAssinaturasPendentes > 0)
+            {
+                <span class="text-[11px] font-medium text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full flex items-center gap-1">Urgente</span>
+            }
+        </div>
+        <div class="mt-4">
+            <h3 class="text-2xl font-bold text-slate-950">@Model.TotalAssinaturasPendentes</h3>
+            <p class="text-xs font-medium text-slate-900 mt-0.5">Assinaturas pendentes</p>
+            <p class="text-[10px] text-slate-500 font-light">Aguardando revisão</p>
+        </div>
+    </div>
+
+    <div class="bg-white p-5 rounded-lg border border-gray-300 shadow-sm flex flex-col justify-between h-full min-h-[150px]">
+        <div class="flex items-center justify-between">
+            <div class="w-9 h-9 bg-slate-100 rounded-lg flex items-center justify-center text-slate-700">
+                <i class="fa-regular fa-calendar-minus text-base"></i>
+            </div>
+        </div>
+        <div class="mt-4">
+            <h3 class="text-2xl font-bold text-slate-950">@Model.TotalPrestesAExpirar</h3>
+            <p class="text-xs font-medium text-slate-900 mt-0.5">Prestes a expirar</p>
+            <p class="text-[10px] text-slate-500 font-light">Próximos 30 dias</p>
+        </div>
+    </div>
+
+    <div class="col-span-1 sm:col-span-2 lg:col-span-1 flex flex-col justify-between gap-4 h-full">
+
+        <div class="bg-white p-4 rounded-lg border border-gray-300 shadow-sm flex items-center justify-between h-[calc(50%-8px)]">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center text-slate-700">
+                    <i class="fa-solid fa-anchor text-sm"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-slate-900">Embarcações</p>
+                    <p class="text-[10px] text-slate-500 font-light">@(Model.IsEstaleiro ? "Suas vinculadas" : "Total no sistema")</p>
+                </div>
+            </div>
+            <h3 class="text-xl font-bold text-slate-950 pr-1">@Model.TotalEmbarcoes</h3>
+        </div>
+
+        <div class="bg-white p-4 rounded-lg border border-gray-300 shadow-sm flex items-center justify-between h-[calc(50%-8px)]">
+            @if (!Model.IsEstaleiro)
+            {
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center text-slate-700">
+                        <i class="fa-solid fa-warehouse text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-slate-900">Estaleiros</p>
+                        <p class="text-[10px] text-slate-500 font-light">Parceiros ativos</p>
+                    </div>
+                </div>
+                <h3 class="text-xl font-bold text-slate-950 pr-1">@Model.TotalEstaleiros</h3>
+            }
+            else
+            {
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center text-slate-700">
+                        <i class="fa-solid fa-circle-check text-sm text-emerald-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-slate-900">Status Cadastral</p>
+                        <p class="text-[10px] text-slate-400 font-light">Homologado</p>
+                    </div>
+                </div>
+                <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full uppercase">Ativo</span>
+            }
+        </div>
+
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 font-['Poppins']">
+
+    <div class="bg-white p-6 rounded-lg border border-gray-300 shadow-sm flex flex-col justify-between">
+        <div>
+            <h2 class="text-sm font-semibold text-slate-950">Situação dos Documentos</h2>
+            <p class="text-[11px] text-slate-500 mt-0.5">Proporção por criticidade operacional</p>
+        </div>
+        <div class="my-4 flex items-center justify-center min-h-[260px]">
+            <div id="chartStatusDocs" class="w-full"></div>
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg border border-gray-300 shadow-sm lg:col-span-2 flex flex-col justify-between">
+        <div>
+            <h2 class="text-sm font-semibold text-slate-950">
+                @(Model.IsEstaleiro ? "Histórico de Assinaturas e Envios" : "Evolução do Ecossistema")
+            </h2>
+            <p class="text-[11px] text-slate-500 mt-0.5">Dados analíticos dos últimos 6 meses</p>
+        </div>
+        <div class="my-2 min-h-[260px]">
+            <div id="chartEvolucao" class="w-full"></div>
+        </div>
+    </div>
+
+    @if (!Model.IsEstaleiro)
+    {
+        <div class="bg-white p-6 rounded-lg border border-gray-300 shadow-sm lg:col-span-3 flex flex-col">
+            <div>
+                <h2 class="text-sm font-semibold text-slate-950">Concentração de Documentos por Estaleiro</h2>
+                <p class="text-[11px] text-slate-500 mt-0.5">Volume total gerenciado por organização parceira</p>
+            </div>
+            <div class="mt-4 min-h-[240px]">
+                <div id="chartDocsEstaleiro" class="w-full"></div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const isEstaleiro = @(Model.IsEstaleiro ? "true" : "false");
+
+            // --- GRÁFICO 1: STATUS (Donut) ---
+            const optionsStatus = {
+                chart: { type: 'donut', height: 260, fontFamily: 'Poppins, sans-serif' },
+                series: [@Model.TotalDocumentosAssinados, @Model.TotalAssinaturasPendentes, @Model.TotalPrestesAExpirar],
+                labels: ['Assinados', 'Pendentes', 'Prestes a Expirar'],
+                colors: ['#0284c7', '#e11d48', '#f59e0b'],
+                legend: { position: 'bottom', fontSize: '11px' },
+                dataLabels: { enabled: true, style: { fontSize: '11px' } },
+                plotOptions: { pie: { donut: { size: '65%' } } }
+            };
+            new ApexCharts(document.querySelector("#chartStatusDocs"), optionsStatus).render();
+
+            // --- GRÁFICO 2: EVOLUÇÃO TEMPORAL ---
+            const seriesData = isEstaleiro ? [
+                { name: 'Docs Assinados', data: @Html.Raw(Json.Serialize(Model.HistoricoSeries1)) },
+                { name: 'Docs Pendentes', data: @Html.Raw(Json.Serialize(Model.HistoricoSeries2)) }
+            ] : [
+                { name: 'Embarcações', data: @Html.Raw(Json.Serialize(Model.HistoricoSeries1)) },
+                { name: 'Estaleiros', data: @Html.Raw(Json.Serialize(Model.HistoricoSeries2)) }
+            ];
+
+            const colorsData = isEstaleiro ? ['#10b981', '#f43f5e'] : ['#075985', '#475569'];
+
+            const optionsEvolucao = {
+                chart: { type: 'bar', height: 260, toolbar: { show: false }, fontFamily: 'Poppins, sans-serif' },
+                series: seriesData,
+                xaxis: { categories: @Html.Raw(Json.Serialize(Model.MesesLabels)), labels: { style: { fontSize: '11px' } } },
+                colors: colorsData,
+                plotOptions: { bar: { borderRadius: 4, columnWidth: '50%' } },
+                dataLabels: { enabled: false },
+                legend: { position: 'top', fontSize: '11px' },
+                grid: { borderColor: '#f1f5f9' }
+            };
+            new ApexCharts(document.querySelector("#chartEvolucao"), optionsEvolucao).render();
+
+            // --- GRÁFICO 3: DOCUMENTOS POR ESTALEIRO ---
+            if (!isEstaleiro) {
+                const optionsDocsEstaleiro = {
+                    chart: { type: 'bar', height: 240, toolbar: { show: false }, fontFamily: 'Poppins, sans-serif' },
+                    series: [{ name: 'Documentos', data: @Html.Raw(Json.Serialize(Model.QuantidadeDocumentosPorEstaleiro)) }],
+                    plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '45%' } },
+                    colors: ['#0369a1'],
+                    dataLabels: { enabled: true, style: { fontSize: '10px' }, offsetX: -6 },
+                    xaxis: { categories: @Html.Raw(Json.Serialize(Model.EstaleirosNomes)), labels: { style: { fontSize: '11px' } } },
+                    yaxis: { labels: { style: { fontSize: '11px', fontWeight: 500 } } },
+                    grid: { borderColor: '#f1f5f9' }
+                };
+                new ApexCharts(document.querySelector("#chartDocsEstaleiro"), optionsDocsEstaleiro).render();
+            }
+        });
+    </script>
 }
-<p> 
-    <a asp-action="Index" asp-controller="Estaleiro">Estaleiros</a>
-    <a class="nav-link text-dark" asp-area="" asp-controller="Accounts" asp-action="Logout">logout</a>
-</p>
