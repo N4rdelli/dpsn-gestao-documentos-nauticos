@@ -1,0 +1,139 @@
+﻿@model dpsn_gestao_documentos_nauticos.ViewModel.DocumentoViewModel
+
+<h2>Criar Documento</h2>
+
+<form action="/Documento/Create" method="post">
+    @Html.AntiForgeryToken()
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div style="color: red;">
+            @Html.ValidationSummary(false)
+        </div>
+    }
+
+    @if (User.IsInRole("Tecnologo") || User.IsInRole("Admin"))
+    {
+        <div>
+            <label>Selecione o Estaleiro Parceiro:</label>
+            <select name="EstaleiroId" id="ddlEstaleiro" required>
+                <option value="">-- Selecione um Estaleiro --</option>
+                @if (Model.Estaleiros != null)
+                {
+                    foreach (var estaleiro in Model.Estaleiros)
+                    {
+                        <option value="@estaleiro.Id">@estaleiro.NomeFantasia</option>
+                    }
+                }
+            </select>
+        </div>
+    }
+    else
+    {
+        <input type="hidden" name="EstaleiroId" value="@Model.EstaleiroId" id="ddlEstaleiro" />
+    }
+
+    <div style="margin-top: 10px;">
+        <label>Selecione a Embarcação:</label>
+        <select name="EmbarcacaoId" id="ddlEmbarcacao" required>
+            <option value="">-- Selecione primeiro o estaleiro --</option>
+            @if (User.IsInRole("Estaleiro") && Model.Embarcacoes != null)
+            {
+                foreach (var emb in Model.Embarcacoes)
+                {
+                    <option value="@emb.IdEmbarcacao">@emb.Nome</option>
+                }
+            }
+        </select>
+    </div>
+
+    <hr />
+    <h3>Dados do Cliente (Armador)</h3>
+
+    <div>
+        <label>Nome do Armador:</label>
+        <input type="text" name="Nome" value="@Model.Nome" required />
+    </div>
+    <div>
+        <label>CPF/CNPJ:</label>
+        <input type="text" name="Cpf_cnpj" value="@Model.Cpf_cnpj" required />
+    </div>
+    <div>
+        <label>Ano Construção:</label>
+        <input type="text" name="Ano_contrucao" value="@Model.Ano_contrucao" required />
+    </div>
+    <div>
+        <label>Número do Chassi:</label>
+        <input type="text" name="NumeroChassi" value="@Model.NumeroChassi" required />
+    </div>
+
+    <h4>Endereço do Cliente</h4>
+    <div>
+        <label>CEP:</label>
+        <input type="text" name="Cep" value="@Model.Cep" required />
+    </div>
+    <div>
+        <label>Logradouro:</label>
+        <input type="text" name="Logradouro" value="@Model.Logradouro" required />
+    </div>
+    <div>
+        <label>Número:</label>
+        <input type="text" name="Numero" value="@Model.Numero" required />
+    </div>
+    <div>
+        <label>Complemento:</label>
+        <input type="text" name="Complemento" value="@Model.Complemento" />
+    </div>
+    <div>
+        <label>Bairro:</label>
+        <input type="text" name="Bairro" value="@Model.Bairro" required />
+    </div>
+    <div>
+        <label>Cidade:</label>
+        <input type="text" name="Cidade" value="@Model.Cidade" required />
+    </div>
+    <div>
+        <label>Estado:</label>
+        <input type="text" name="Estado" value="@Model.Estado" required />
+    </div>
+    <div>
+        <label>Número Inscrição:</label>
+        <input type="text" name="NumeroInscricao" value="@Model.NumeroInscricao" />
+    </div>
+
+    <div style="margin-top: 15px;">
+        <button type="submit">Salvar Documento</button>
+        <a href="/Documento/Index">Voltar</a>
+    </div>
+</form>
+
+<script>
+    const ddlEstaleiro = document.getElementById("ddlEstaleiro");
+    const ddlEmbarcacao = document.getElementById("ddlEmbarcacao");
+
+    if (ddlEstaleiro && ddlEstaleiro.tagName === "SELECT") {
+        ddlEstaleiro.addEventListener("change", function () {
+            const estaleiroId = this.value;
+            atualizarEmbarcacoes(estaleiroId);
+        });
+    }
+
+    function atualizarEmbarcacoes(estaleiroId) {
+        if (!estaleiroId) {
+            ddlEmbarcacao.innerHTML = '<option value="">-- Selecione primeiro o estaleiro --</option>';
+            return;
+        }
+
+        fetch('/Documento/GetEmbarcacoesPorEstaleiro?estaleiroId=' + estaleiroId)
+            .then(response => response.json())
+            .then(data => {
+                ddlEmbarcacao.innerHTML = '<option value="">-- Selecione uma Embarcação --</option>';
+                data.forEach(emb => {
+                    const option = document.createElement("option");
+                    option.value = emb.idEmbarcacao;
+                    option.text = emb.nome;
+                    ddlEmbarcacao.appendChild(option);
+                });
+            });
+    }
+</script>

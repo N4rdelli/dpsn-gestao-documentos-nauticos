@@ -1,0 +1,67 @@
+﻿@model IEnumerable<dpsn_gestao_documentos_nauticos.Models.Documento>
+
+<h2>Listagem de Documentos</h2>
+
+@if (TempData["MensagemSucesso"] != null)
+{
+    <p style="color: green;">@TempData["MensagemSucesso"]</p>
+}
+@if (TempData["MensagemErro"] != null)
+{
+    <p style="color: red;">@TempData["MensagemErro"]</p>
+}
+
+<p>
+    <a href="/Documento/Create">Criar Novo Documento</a>
+</p>
+
+<table border="1" cellpadding="5" cellspacing="0">
+    <thead>
+        <tr>
+            <th>Estaleiro</th>
+            <th>Embarcação</th>
+            <th>Cliente</th>
+            <th>Status Assinatura</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Estaleiro?.NomeFantasia</td>
+                <td>@item.Embarcacao?.Nome</td>
+                <td>@item.Cliente?.Nome</td>
+                <td>
+                    @(item.StatusAssinatura ? "Assinado (True)" : "Pendente (False)")
+                </td>
+                <td>
+                    @if (User.IsInRole("Estaleiro"))
+                    {
+                        <a href="/Documento/DownloadPdfAssinado?id=@item.Id" style="color: green; font-weight: bold;">Baixar PDF Assinado</a>
+                    }
+                    else if (User.IsInRole("Tecnologo") || User.IsInRole("Admin"))
+                    {
+                        <a href="/Documento/DownloadMinuta?id=@item.Id">1. Baixar Minuta para Assinar</a>
+
+                        @if (!item.StatusAssinatura)
+                        {
+                            <span> | </span>
+                            <form action="/Documento/AssinarEReenviar" method="post" enctype="multipart/form-data" style="display:inline;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <input type="file" name="arquivoPdf" accept=".pdf" required />
+                                <button type="submit">2. Reenviar PDF Assinado</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span> | </span>
+                            <a href="/Documento/DownloadPdfAssinado?id=@item.Id" style="color: gray;">Visualizar Arquivo Reenviado</a>
+                        }
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
