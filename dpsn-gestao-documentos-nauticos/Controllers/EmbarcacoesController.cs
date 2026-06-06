@@ -28,56 +28,94 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
             _userManager = userManager;
         }
 
-        // READ: Lista todas as embarcações
-        public async Task<IActionResult> Index()
+        // GET/Embarcacoes
+        // Lista todas as embarcações
+        public async Task<IActionResult> Index(string termoBusca, string estaleiroId)
         {
             var currentUserId = _userManager.GetUserId(User);
-            var isAdmin = User?.IsInRole("Admin") ?? false;
+            var isAdmin = (User?.IsInRole("Admin") ?? false) || (User?.IsInRole("Tecnologo") ?? false);
 
-            // Se for admin, lista tudo; se for estaleiro lista apenas as embarcações do usuário
-            var filter = isAdmin ? Builders<Embarcacao>.Filter.Empty : Builders<Embarcacao>.Filter.Eq(e => e.EstaleiroId, currentUserId);
-            var embarcacoes = await _embarcacoesCollection.Find(filter).ToListAsync();
+            // 1. Buscar todos os estaleiros para popular o filtro do Admin/Tecnólogo
+            var todosEstaleiros = await _estaleirosCollection.Find(_ => true).ToListAsync();
+            ViewBag.EstaleirosFiltro = new SelectList(todosEstaleiros, "Id", "NomeFantasia", estaleiroId);
 
-            var estaleiros = await _estaleirosCollection.Find(_ => true).ToListAsync();
-            var estaleiroDict = estaleiros.ToDictionary(e => e.Id, e => e.NomeFantasia);
+            // Guardar os valores atuais na view para manter os inputs preenchidos
+            ViewData["CurrentTermo"] = termoBusca;
+            ViewData["CurrentEstaleiro"] = estaleiroId;
 
-            var viewModelList = embarcacoes.Select(e => new EmbarcacaoViewModel
+            List<Embarcacao> embarcacoes;
+
+            // 2. Aplicar regras de visibilidade de dados por Role
+            if (isAdmin)
             {
-                IdEmbarcacao = e.IdEmbarcacao,
-                Nome = e.Nome,
-                TipoEmbarcacao = e.TipoEmbarcacao,
-                AreaNavegacaoTipoServico = e.AreaNavegacaoTipoServico,
-                ComprimentoTotal = e.ComprimentoTotal,
-                NomeEstaleiro = estaleiroDict.ContainsKey(e.EstaleiroId) ? estaleiroDict[e.EstaleiroId] : "Estaleiro Não Encontrado"
-            }).ToList();
-
-            return View(viewModelList);
-        }
-
-        // CREATE: Get Formulário
-        public async Task<IActionResult> Create()
-        {
-            // CORRIGIDO: Seed preventivo adaptado para as propriedades da sua Model
-            if (await _estaleirosCollection.CountDocumentsAsync(_ => true) == 0)
+                // Admin vê tudo por padrão
+                embarcacoes = await _embarcacoesCollection.Find(_ => true).ToListAsync();
+            }
+            else
             {
-                await _estaleirosCollection.InsertOneAsync(new Estaleiro
+                // Estaleiro vê apenas as próprias embarcações
+                embarcacoes = await _embarcacoesCollection.Find(x => x.EstaleiroId == currentUserId).ToListAsync();
+            }
+
+            // 3. Mapear para a ViewModel injetando o nome do estaleiro correspondente
+            var listaViewModel = new List<EmbarcacaoViewModel>();
+            foreach (var emb in embarcacoes)
+            {
+                var est = todosEstaleiros.FirstOrDefault(e => e.Id == emb.EstaleiroId);
+
+                listaViewModel.Add(new EmbarcacaoViewModel
                 {
-                    NomeFantasia = "Estaleiro Naval Central",
-                    RazaoSocial = "Central Engenharia Naval S.A.",
-                    Cnpj = "12345678000199",
-                    Telefone = "1399999999",
-                    Email = "contato@central.com",
-                    Senha = "Senha@Forte123" // Passa na sua validação Regex
+                    IdEmbarcacao = emb.IdEmbarcacao,
+                    EstaleiroId = emb.EstaleiroId,
+                    NomeEstaleiro = est?.NomeFantasia ?? "Estaleiro Não Encontrado",
+                    Nome = emb.Nome,
+                    TipoEmbarcacao = emb.TipoEmbarcacao,
+                    MaterialCasco = emb.MaterialCasco,
+                    ComprimentoTotal = emb.ComprimentoTotal,
+                    BocaMoldada = emb.BocaMoldada,
+                    PontalMoldado = emb.PontalMoldado,
+                    CaladoMaximo = emb.CaladoMaximo,
+                    CaladoLeve = emb.CaladoLeve,
+                    ArqueacaoBruta = emb.ArqueacaoBruta,
+                    ArqueacaoLiquida = emb.ArqueacaoLiquida,
+                    Tpb = emb.Tpb,
+                    Contorno = emb.Contorno,
+                    Lastro = emb.Lastro,
+                    AreaNavegacaoTipoServico = emb.AreaNavegacaoTipoServico,
+                    MotorizacaoMax = emb.MotorizacaoMax
                 });
             }
 
+            // 4. Aplicar Filtros de Backend (Termos: Nome da Embarcação ou Nome do Estaleiro)
+            if (!string.IsNullOrEmpty(termoBusca))
+            {
+                termoBusca = termoBusca.Trim().ToLower();
+                listaViewModel = listaViewModel.Where(x =>
+                    x.Nome.ToLower().Contains(termoBusca) ||
+                    x.NomeEstaleiro.ToLower().Contains(termoBusca)
+                ).ToList();
+            }
+
+            // 5. Aplicar Filtro Avançado por Dropdown de Estaleiro (Apenas Admin/Tecnólogo)
+            if (isAdmin && !string.IsNullOrEmpty(estaleiroId))
+            {
+                listaViewModel = listaViewModel.Where(x => x.EstaleiroId == estaleiroId).ToList();
+            }
+
+            return View(listaViewModel);
+        }
+
+        // GET: Embarcacoes/Create
+        [HttpGet]
+        public async Task<IActionResult> Create()
+        {
             var model = new EmbarcacaoViewModel();
 
+            // Se o usuário logado for um Estaleiro, pré-vincula o GUID dele
             var currentUserId = _userManager.GetUserId(User);
-            var isAdmin = User?.IsInRole("Admin") ?? false;
+            var isEstaleiro = User?.IsInRole("Estaleiro") ?? false;
 
-            // Se não for admin, predefina EstaleiroId para o usuário atual
-            if (!isAdmin && !string.IsNullOrEmpty(currentUserId))
+            if (isEstaleiro && !string.IsNullOrEmpty(currentUserId))
             {
                 model.EstaleiroId = currentUserId;
             }
@@ -86,51 +124,33 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
             return View(model);
         }
 
-        // CREATE: Post Ação
+        // POST: Embarcacoes/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(EmbarcacaoViewModel model)
         {
-            var currentUserId = _userManager.GetUserId(User);
-            var isAdmin = User?.IsInRole("Admin") ?? false;
+            // Limpa a validação das propriedades que não vêm do formulário HTML
+            ModelState.Remove(nameof(model.IdEmbarcacao));
+            ModelState.Remove(nameof(model.NomeEstaleiro));
+            ModelState.Remove(nameof(model.EstaleirosDisponiveis));
 
-            // Se não for admin forçe o EstaleiroId para o usuário autenticado
-            if (!isAdmin)
+            // Segurança de Back-end: Força o ID do próprio usuário logado se ele for um Estaleiro
+            var currentUserId = _userManager.GetUserId(User);
+            var isEstaleiro = User?.IsInRole("Estaleiro") ?? false;
+
+            if (isEstaleiro && !string.IsNullOrEmpty(currentUserId))
             {
-                if (!string.IsNullOrEmpty(currentUserId))
-                {
-                    model.EstaleiroId = currentUserId;
-                }
-                else
-                {
-                    // Usuário não autenticado: para permitir teste local, atribui o primeiro estaleiro disponível
-                    var primeiro = await _estaleirosCollection.Find(_ => true).FirstOrDefaultAsync();
-                    if (primeiro == null)
-                    {
-                        // Seed rápido para permitir teste
-                        primeiro = new Estaleiro
-                        {
-                            NomeFantasia = "Estaleiro de Teste",
-                            RazaoSocial = "Teste Ltda",
-                            Cnpj = "00000000000000",
-                            Telefone = "000000000",
-                            Email = "teste@local",
-                            Senha = "Senha@123"
-                        };
-                        await _estaleirosCollection.InsertOneAsync(primeiro);
-                    }
-                    model.EstaleiroId = primeiro.Id;
-                    TempData["MensagemAviso"] = "Usuário não autenticado: usando estaleiro de teste para persistir (apenas para teste).";
-                }
+                model.EstaleiroId = currentUserId;
             }
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    var embarcacao = new Embarcacao
+                    // Mapeia os dados da ViewModel para a Entidade do MongoDB
+                    var novaEmbarcacao = new Embarcacao
                     {
-                        EstaleiroId = model.EstaleiroId,
+                        EstaleiroId = model.EstaleiroId, // Agora salva o GUID de 36 caracteres diretamente
                         Nome = model.Nome,
                         ComprimentoTotal = model.ComprimentoTotal,
                         BocaMoldada = model.BocaMoldada,
@@ -145,137 +165,269 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
                         AreaNavegacaoTipoServico = model.AreaNavegacaoTipoServico,
                         TipoEmbarcacao = model.TipoEmbarcacao,
                         MaterialCasco = model.MaterialCasco,
-                        MotorizacaoMax = model.MotorizacaoMax,
-                        MotorizacaoMin = model.MotorizacaoMin,
-                        Data = DateTime.UtcNow
+                        MotorizacaoMax = model.MotorizacaoMax
+                        // PotenciaTotalHp e ComprimentoRegra removidos com sucesso
                     };
 
-                    await _embarcacoesCollection.InsertOneAsync(embarcacao);
-                    TempData["MensagemSucesso"] = "Embarcação criada com sucesso.";
+                    // Insere no banco MongoDB sem restrições de formatação hexadecimal
+                    await _embarcacoesCollection.InsertOneAsync(novaEmbarcacao);
+
+                    TempData["MensagemSucesso"] = "Embarcação registrada com sucesso no sistema!";
                     return RedirectToAction(nameof(Index));
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Erro ao inserir embarcação: {ex.Message}");
-                    ModelState.AddModelError(string.Empty, "Ocorreu um erro ao salvar a embarcação. Verifique o log do servidor.");
+                    ModelState.AddModelError("", $"Erro interno ao salvar no MongoDB: {ex.Message}");
                 }
             }
 
+            // Se houver erros, recarrega a estrutura do dropdown e exibe as validações
             await CarregarEstaleirosDropdown(model);
             return View(model);
         }
 
-        // UPDATE: Get Formulário
+        // GET: Embarcacoes/Edit/{id}
+        [HttpGet]
         public async Task<IActionResult> Edit(string id)
         {
             if (string.IsNullOrEmpty(id)) return NotFound();
 
-            var e = await _embarcacoesCollection.Find(x => x.IdEmbarcacao == id).FirstOrDefaultAsync();
-            if (e == null) return NotFound();
+            // Busca a embarcação diretamente no MongoDB
+            var embarcacao = await _embarcacoesCollection.Find(x => x.IdEmbarcacao == id).FirstOrDefaultAsync();
+            if (embarcacao == null) return NotFound();
 
-            // Só o estaleiro dono ou admin pode editar
+            // Segurança: Se o usuário for Estaleiro, ele só pode editar as próprias embarcações
             var currentUserId = _userManager.GetUserId(User);
             var isAdmin = User?.IsInRole("Admin") ?? false;
-            if (!isAdmin && e.EstaleiroId != currentUserId) return Forbid();
+            if (!isAdmin && embarcacao.EstaleiroId != currentUserId)
+            {
+                return Forbid();
+            }
 
+            // Mapeia a Entidade do banco para a ViewModel da tela
             var model = new EmbarcacaoViewModel
             {
-                IdEmbarcacao = e.IdEmbarcacao,
-                EstaleiroId = e.EstaleiroId,
-                Nome = e.Nome,
-                ComprimentoTotal = e.ComprimentoTotal,
-                BocaMoldada = e.BocaMoldada,
-                PontalMoldado = e.PontalMoldado,
-                CaladoMaximo = e.CaladoMaximo,
-                CaladoLeve = e.CaladoLeve,
-                ArqueacaoBruta = e.ArqueacaoBruta,
-                ArqueacaoLiquida = e.ArqueacaoLiquida,
-                Tpb = e.Tpb,
-                Contorno = e.Contorno,
-                Lastro = e.Lastro,
-                AreaNavegacaoTipoServico = e.AreaNavegacaoTipoServico,
-                TipoEmbarcacao = e.TipoEmbarcacao,
-                MaterialCasco = e.MaterialCasco,
-                MotorizacaoMax = e.MotorizacaoMax,
-                MotorizacaoMin = e.MotorizacaoMin
+                IdEmbarcacao = embarcacao.IdEmbarcacao,
+                EstaleiroId = embarcacao.EstaleiroId,
+                Nome = embarcacao.Nome,
+                ComprimentoTotal = embarcacao.ComprimentoTotal,
+                BocaMoldada = embarcacao.BocaMoldada,
+                PontalMoldado = embarcacao.PontalMoldado,
+                CaladoMaximo = embarcacao.CaladoMaximo,
+                CaladoLeve = embarcacao.CaladoLeve,
+                ArqueacaoBruta = embarcacao.ArqueacaoBruta,
+                ArqueacaoLiquida = embarcacao.ArqueacaoLiquida,
+                Tpb = embarcacao.Tpb,
+                Contorno = embarcacao.Contorno,
+                Lastro = embarcacao.Lastro,
+                AreaNavegacaoTipoServico = embarcacao.AreaNavegacaoTipoServico,
+                TipoEmbarcacao = embarcacao.TipoEmbarcacao,
+                MaterialCasco = embarcacao.MaterialCasco,
+                MotorizacaoMax = embarcacao.MotorizacaoMax
             };
 
             await CarregarEstaleirosDropdown(model);
             return View(model);
         }
 
-        // UPDATE: Post Ação
+        // POST: Embarcacoes/Edit/{id}
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(string id, EmbarcacaoViewModel model)
         {
             if (id != model.IdEmbarcacao) return NotFound();
-            // Ownership check: only owner or admin can update
+
+            // CORREÇÃO CENTRAL: Remove do validador os campos que não vêm editados do formulário HTML
+            ModelState.Remove(nameof(model.NomeEstaleiro));
+            ModelState.Remove(nameof(model.EstaleirosDisponiveis));
+
+            // Segurança de Back-end: Se for um usuário de Estaleiro, força o ID dele como dono
             var currentUserId = _userManager.GetUserId(User);
             var isAdmin = User?.IsInRole("Admin") ?? false;
 
-            var existing = await _embarcacoesCollection.Find(x => x.IdEmbarcacao == id).FirstOrDefaultAsync();
-            if (existing == null) return NotFound();
-            if (!isAdmin && existing.EstaleiroId != currentUserId) return Forbid();
+            if (!isAdmin && !string.IsNullOrEmpty(currentUserId))
+            {
+                model.EstaleiroId = currentUserId;
+            }
 
             if (ModelState.IsValid)
             {
-                var filter = Builders<Embarcacao>.Filter.Eq(x => x.IdEmbarcacao, id);
-                var update = Builders<Embarcacao>.Update
-                    .Set(x => x.EstaleiroId, model.EstaleiroId)
-                    .Set(x => x.Nome, model.Nome)
-                    .Set(x => x.ComprimentoTotal, model.ComprimentoTotal)
-                    .Set(x => x.BocaMoldada, model.BocaMoldada)
-                    .Set(x => x.PontalMoldado, model.PontalMoldado)
-                    .Set(x => x.CaladoMaximo, model.CaladoMaximo)
-                    .Set(x => x.CaladoLeve, model.CaladoLeve)
-                    .Set(x => x.ArqueacaoBruta, model.ArqueacaoBruta)
-                    .Set(x => x.ArqueacaoLiquida, model.ArqueacaoLiquida)
-                    .Set(x => x.Tpb, model.Tpb)
-                    .Set(x => x.Contorno, model.Contorno)
-                    .Set(x => x.Lastro, model.Lastro)
-                    .Set(x => x.AreaNavegacaoTipoServico, model.AreaNavegacaoTipoServico)
-                    .Set(x => x.TipoEmbarcacao, model.TipoEmbarcacao)
-                    .Set(x => x.MaterialCasco, model.MaterialCasco)
-                    .Set(x => x.MotorizacaoMax, model.MotorizacaoMax)
-                    .Set(x => x.MotorizacaoMin, model.MotorizacaoMin);
+                try
+                {
+                    // Busca o registro atual antes de atualizar para garantir que ele existe e pertence ao usuário
+                    var existing = await _embarcacoesCollection.Find(x => x.IdEmbarcacao == id).FirstOrDefaultAsync();
+                    if (existing == null) return NotFound();
+                    if (!isAdmin && existing.EstaleiroId != currentUserId) return Forbid();
 
-                await _embarcacoesCollection.UpdateOneAsync(filter, update);
-                return RedirectToAction(nameof(Index));
+                    // Mapeia as alterações da ViewModel de volta para o objeto de domínio do MongoDB
+                    existing.Nome = model.Nome;
+                    existing.EstaleiroId = model.EstaleiroId; // Mantém ou atualiza o GUID com segurança
+                    existing.ComprimentoTotal = model.ComprimentoTotal;
+                    existing.BocaMoldada = model.BocaMoldada;
+                    existing.PontalMoldado = model.PontalMoldado;
+                    existing.CaladoMaximo = model.CaladoMaximo;
+                    existing.CaladoLeve = model.CaladoLeve;
+                    existing.ArqueacaoBruta = model.ArqueacaoBruta;
+                    existing.ArqueacaoLiquida = model.ArqueacaoLiquida;
+                    existing.Tpb = model.Tpb;
+                    existing.Contorno = model.Contorno;
+                    existing.Lastro = model.Lastro;
+                    existing.AreaNavegacaoTipoServico = model.AreaNavegacaoTipoServico;
+                    existing.TipoEmbarcacao = model.TipoEmbarcacao;
+                    existing.MaterialCasco = model.MaterialCasco;
+                    existing.MotorizacaoMax = model.MotorizacaoMax;
+
+                    // Executa a substituição do documento antigo pelo atualizado no MongoDB
+                    var result = await _embarcacoesCollection.ReplaceOneAsync(x => x.IdEmbarcacao == id, existing);
+
+                    if (result.ModifiedCount > 0 || result.MatchedCount > 0)
+                    {
+                        TempData["MensagemSucesso"] = "Alterações da embarcação salvas com sucesso!";
+                        return RedirectToAction(nameof(Index));
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("", "Nenhuma alteração foi detectada ou modificada no banco.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", $"Erro interno ao atualizar no MongoDB: {ex.Message}");
+                }
             }
 
+            // Se falhar a validação ou der erro, recarrega a estrutura do dropdown e exibe os alertas na View
             await CarregarEstaleirosDropdown(model);
             return View(model);
         }
 
-        // DELETE: Get Confirmação
+        // GET: Embarcacoes/Details/{id}
+        [HttpGet]
+        public async Task<IActionResult> Details(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return NotFound();
+
+            // 1. Busca a embarcação diretamente no MongoDB
+            var embarcacao = await _embarcacoesCollection.Find(x => x.IdEmbarcacao == id).FirstOrDefaultAsync();
+            if (embarcacao == null) return NotFound();
+
+            // 2. Trava de Segurança: Se o usuário logado for um Estaleiro, ele só pode ver os detalhes das suas próprias embarcações
+            var currentUserId = _userManager.GetUserId(User);
+            var isAdmin = User?.IsInRole("Admin") ?? false;
+            if (!isAdmin && embarcacao.EstaleiroId != currentUserId)
+            {
+                return Forbid(); // Retorna o erro 403 de Acesso Negado
+            }
+
+            // 3. Cria a ViewModel mapeando os dados técnicos da entidade do banco
+            var model = new EmbarcacaoViewModel
+            {
+                IdEmbarcacao = embarcacao.IdEmbarcacao,
+                EstaleiroId = embarcacao.EstaleiroId,
+                Nome = embarcacao.Nome,
+                ComprimentoTotal = embarcacao.ComprimentoTotal,
+                BocaMoldada = embarcacao.BocaMoldada,
+                PontalMoldado = embarcacao.PontalMoldado,
+                CaladoMaximo = embarcacao.CaladoMaximo,
+                CaladoLeve = embarcacao.CaladoLeve,
+                ArqueacaoBruta = embarcacao.ArqueacaoBruta,
+                ArqueacaoLiquida = embarcacao.ArqueacaoLiquida,
+                Tpb = embarcacao.Tpb,
+                Contorno = embarcacao.Contorno,
+                Lastro = embarcacao.Lastro,
+                AreaNavegacaoTipoServico = embarcacao.AreaNavegacaoTipoServico,
+                TipoEmbarcacao = embarcacao.TipoEmbarcacao,
+                MaterialCasco = embarcacao.MaterialCasco,
+                MotorizacaoMax = embarcacao.MotorizacaoMax
+            };
+
+            // 4. Busca o Nome Fantasia do estaleiro para exibir na tela de detalhes
+            if (!string.IsNullOrEmpty(model.EstaleiroId))
+            {
+                var estaleiro = await _estaleirosCollection.Find(e => e.Id == model.EstaleiroId).FirstOrDefaultAsync();
+                model.NomeEstaleiro = estaleiro != null ? estaleiro.NomeFantasia : "Estaleiro Não Localizado";
+            }
+            else
+            {
+                model.NomeEstaleiro = "Não vinculado";
+            }
+
+            return View(model);
+        }
+
+        // GET: Embarcacoes/Delete/{id}
+        [HttpGet]
         public async Task<IActionResult> Delete(string id)
         {
             if (string.IsNullOrEmpty(id)) return NotFound();
 
-            var e = await _embarcacoesCollection.Find(x => x.IdEmbarcacao == id).FirstOrDefaultAsync();
-            if (e == null) return NotFound();
+            // Busca a embarcação no MongoDB
+            var embarcacao = await _embarcacoesCollection.Find(x => x.IdEmbarcacao == id).FirstOrDefaultAsync();
+            if (embarcacao == null) return NotFound();
 
+            // Segurança: Se for Estaleiro, impede de visualizar/deletar dados de outros
             var currentUserId = _userManager.GetUserId(User);
             var isAdmin = User?.IsInRole("Admin") ?? false;
-            if (!isAdmin && e.EstaleiroId != currentUserId) return Forbid();
+            if (!isAdmin && embarcacao.EstaleiroId != currentUserId)
+            {
+                return Forbid();
+            }
 
-            return View(e);
+            // Mapeia para a ViewModel (removendo os campos inexistentes)
+            var model = new EmbarcacaoViewModel
+            {
+                IdEmbarcacao = embarcacao.IdEmbarcacao,
+                EstaleiroId = embarcacao.EstaleiroId,
+                Nome = embarcacao.Nome,
+                ComprimentoTotal = embarcacao.ComprimentoTotal,
+                BocaMoldada = embarcacao.BocaMoldada,
+                PontalMoldado = embarcacao.PontalMoldado,
+                CaladoMaximo = embarcacao.CaladoMaximo,
+                CaladoLeve = embarcacao.CaladoLeve,
+                ArqueacaoBruta = embarcacao.ArqueacaoBruta,
+                ArqueacaoLiquida = embarcacao.ArqueacaoLiquida,
+                Tpb = embarcacao.Tpb,
+                Contorno = embarcacao.Contorno,
+                Lastro = embarcacao.Lastro,
+                AreaNavegacaoTipoServico = embarcacao.AreaNavegacaoTipoServico,
+                TipoEmbarcacao = embarcacao.TipoEmbarcacao,
+                MaterialCasco = embarcacao.MaterialCasco,
+                MotorizacaoMax = embarcacao.MotorizacaoMax
+            };
+
+            // Busca o nome do estaleiro apenas para exibição amigável na tela de confirmação
+            if (!string.IsNullOrEmpty(model.EstaleiroId))
+            {
+                var estaleiro = await _estaleirosCollection.Find(e => e.Id == model.EstaleiroId).FirstOrDefaultAsync();
+                model.NomeEstaleiro = estaleiro != null ? estaleiro.NomeFantasia : "Estaleiro Não Localizado";
+            }
+
+            return View(model);
         }
 
-        // DELETE: Post Ação de Exclusão definitiva
+        // POST: Embarcacoes/Delete/{id}
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
+            if (string.IsNullOrEmpty(id)) return NotFound();
+
+            // Busca o registro atual para validar a posse antes de apagar de vez
             var existing = await _embarcacoesCollection.Find(x => x.IdEmbarcacao == id).FirstOrDefaultAsync();
             if (existing == null) return NotFound();
 
+            // Validação de segurança baseada no GUID salvo no banco
             var currentUserId = _userManager.GetUserId(User);
             var isAdmin = User?.IsInRole("Admin") ?? false;
-            if (!isAdmin && existing.EstaleiroId != currentUserId) return Forbid();
+            if (!isAdmin && existing.EstaleiroId != currentUserId)
+            {
+                return Forbid();
+            }
 
+            // Remove o documento do cluster MongoDB
             await _embarcacoesCollection.DeleteOneAsync(x => x.IdEmbarcacao == id);
+
+            TempData["MensagemSucesso"] = "Embarcação removida com sucesso do sistema.";
             return RedirectToAction(nameof(Index));
         }
 

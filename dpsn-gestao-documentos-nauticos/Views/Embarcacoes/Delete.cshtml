@@ -1,26 +1,61 @@
-﻿@model dpsn_gestao_documentos_nauticos.Models.Embarcacao
+﻿@model dpsn_gestao_documentos_nauticos.ViewModel.EmbarcacaoViewModel
 
 @{
-    ViewData["Title"] = "Remover Registro";
+    ViewData["Title"] = "Remover Embarcação";
 }
 
-<div class="container mt-5" style="max-width: 550px;">
-    <div class="card border-danger shadow">
-        <div class="card-header bg-danger text-white">
-            <h5 class="mb-0"><i class="bi bi-exclamation-triangle-fill"></i> Atenção: Exclusão Definitiva</h5>
-        </div>
-        <div class="card-body text-center">
-            <p class="card-text fs-5">Você tem certeza absoluta de que deseja deletar a embarcação?</p>
-            <h3 class="text-danger my-3">"@Model.Nome"</h3>
-            <p class="text-muted small">Essa ação removerá o documento de forma permanente do cluster MongoDB.</p>
-            
-            <form asp-action="Delete" method="post" class="mt-4">
-                <input type="hidden" asp-for="IdEmbarcacao" />
-                <div class="d-flex justify-content-center">
-                    <a asp-action="Index" class="btn btn-secondary me-3">Não, Cancelar</a>
-                    <button type="submit" class="btn btn-danger">Sim, Confirmar Exclusão</button>
-                </div>
-            </form>
-        </div>
+<div class="mb-8">
+    <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Descredenciamento de Embarcação</h1>
+    <p class="text-sm text-slate-500 mt-1">Remoção de registros estruturais do ecossistema de documentos navais.</p>
+</div>
+
+<div class="bg-rose-50 border-l-4 border-rose-500 p-5 rounded-r-xl mb-6 shadow-sm flex items-start space-x-3">
+    <svg class="w-6 h-6 text-rose-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+    </svg>
+    <div>
+        <h3 class="text-base font-bold text-rose-800">Confirmar a exclusão permanente?</h3>
+        <p class="text-sm text-rose-700/90 mt-1">Você está prestes a remover permanentemente a embarcação <b>@Model.Nome</b> do banco de dados. Documentos técnicos associados a este registro podem perder suas amarras de integridade.</p>
     </div>
 </div>
+
+<div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm mb-6">
+    <div class="flex items-center space-x-4 border-b border-slate-100 pb-4 mb-4">
+        <div class="w-12 h-12 bg-slate-100 text-slate-600 rounded-lg flex items-center justify-center border border-slate-200">
+            <i class="fa-solid fa-ship text-lg"></i>
+        </div>
+        <div>
+            <h4 class="font-bold text-slate-800 text-base">@Model.Nome</h4>
+            <span class="text-xs text-slate-400 font-mono">ID MongoDB: @Model.IdEmbarcacao</span>
+        </div>
+    </div>
+
+    <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 text-sm">
+        <div>
+            <dt class="text-xs font-semibold text-slate-400 uppercase">Estaleiro de Origem</dt>
+            <dd class="text-slate-800 mt-0.5 font-medium">@Model.NomeEstaleiro</dd>
+        </div>
+        <div>
+            <dt class="text-xs font-semibold text-slate-400 uppercase">Tipo / Categoria</dt>
+            <dd class="text-slate-800 mt-0.5">@Model.TipoEmbarcacao</dd>
+        </div>
+        <div>
+            <dt class="text-xs font-semibold text-slate-400 uppercase">Comprimento Total</dt>
+            <dd class="text-slate-800 mt-0.5 font-mono">@Model.ComprimentoTotal.ToString("N2") metros</dd>
+        </div>
+        <div>
+            <dt class="text-xs font-semibold text-slate-400 uppercase">Arqueação Bruta (AB)</dt>
+            <dd class="text-slate-800 mt-0.5 font-mono">@Model.ArqueacaoBruta.ToString("N2")</dd>
+        </div>
+    </dl>
+</div>
+
+<form asp-action="Delete" class="flex items-center space-x-3">
+    <input type="hidden" asp-for="IdEmbarcacao" />
+    <a asp-action="Index" class="px-5 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
+        Não, cancelar e voltar
+    </a>
+    <button type="submit" class="px-5 py-2.5 text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-lg shadow-sm transition-all">
+        Sim, Confirmar Exclusão Definitiva
+    </button>
+</form>
