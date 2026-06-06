@@ -11,7 +11,6 @@ namespace dpsn_gestao_documentos_nauticos.Models
         public string IdEmbarcacao { get; set; }
 
         [BsonElement("estaleiro_id")]
-        [BsonRepresentation(BsonType.ObjectId)]
         public string EstaleiroId { get; set; } // Guarda o "Id" string vindo do ApplicationUser
 
         public string Nome { get; set; }

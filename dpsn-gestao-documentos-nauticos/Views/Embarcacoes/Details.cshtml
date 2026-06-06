@@ -1,0 +1,137 @@
+﻿@model dpsn_gestao_documentos_nauticos.ViewModel.EmbarcacaoViewModel
+
+@{
+    ViewData["Title"] = "Especificações da Embarcação";
+}
+
+<div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Especificações da Embarcação</h1>
+        <p class="text-sm text-slate-500 mt-1">Parâmetros físicos e hidrodinâmicos validados da embarcação **@Model.Nome**.</p>
+    </div>
+    <div class="inline-flex space-x-2">
+        <a asp-action="Index" class="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
+            Voltar
+        </a>
+        <a asp-action="Edit" asp-route-id="@Model.IdEmbarcacao" class="px-4 py-2 text-sm font-medium text-white bg-sky-700 hover:bg-sky-800 rounded-lg shadow-sm transition-all">
+            Editar Especificações
+        </a>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm h-fit space-y-5">
+        <div class="flex items-center space-x-3">
+            <div class="w-12 h-12 bg-sky-50 text-sky-700 rounded-xl flex items-center justify-center border border-blue-100">
+                <i class="fa-solid fa-ship text-xl"></i>
+            </div>
+            <div>
+                <h2 class="font-bold text-slate-900 text-lg">@Model.Nome</h2>
+                <span class="text-xs text-slate-400">ID: @Model.IdEmbarcacao</span>
+            </div>
+        </div>
+
+        <div class="border-t border-slate-100 pt-4 space-y-3">
+            <div>
+                <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Estaleiro Construtor</span>
+                <span class="text-sm font-semibold text-sky-700 bg-sky-50 border border-blue-100/50 px-2.5 py-1 rounded-md block mt-1 w-fit">
+                    @Model.NomeEstaleiro
+                </span>
+            </div>
+            <div>
+                <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Tipo / Atividade</span>
+                <span class="text-sm text-slate-700 font-medium">@Model.TipoEmbarcacao</span>
+            </div>
+            <div>
+                <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Material do Casco</span>
+                <span class="text-sm text-slate-700 font-medium">@Model.MaterialCasco</span>
+            </div>
+            <div>
+                <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Área de Serviço</span>
+                <span class="text-sm text-slate-700 font-medium">@Model.AreaNavegacaoTipoServico</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="lg:col-span-2 space-y-6">
+        <div class="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="bg-slate-50 px-6 py-4 border-b border-slate-100">
+                <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-ruler-combined text-slate-400"></i> Geometria e Dimensões Principais
+                </h3>
+            </div>
+            <table class="w-full text-left border-collapse text-sm">
+                <tbody class="divide-y divide-slate-100">
+                    <tr class="hover:bg-slate-50/30">
+                        <td class="px-6 py-3.5 font-medium text-slate-500 w-1/2">Comprimento Total</td>
+                        <td class="px-6 py-3.5 font-mono font-semibold text-slate-800">@Model.ComprimentoTotal.ToString("N2") m</td>
+                    </tr>
+                    <tr class="hover:bg-slate-50/30">
+                        <td class="px-6 py-3.5 font-medium text-slate-500">Boca Moldada</td>
+                        <td class="px-6 py-3.5 font-mono font-semibold text-slate-800">@Model.BocaMoldada.ToString("N2") m</td>
+                    </tr>
+                    <tr class="hover:bg-slate-50/30">
+                        <td class="px-6 py-3.5 font-medium text-slate-500">Pontal Moldado</td>
+                        <td class="px-6 py-3.5 font-mono font-semibold text-slate-800">@Model.PontalMoldado.ToString("N2") m</td>
+                    </tr>
+                    <tr class="hover:bg-slate-50/30">
+                        <td class="px-6 py-3.5 font-medium text-slate-500">Contorno</td>
+                        <td class="px-6 py-3.5 font-mono font-semibold text-slate-800">@Model.Contorno.ToString("N2") m</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="bg-slate-50 px-6 py-4 border-b border-slate-100">
+                <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-weight-hanging text-slate-400"></i> Calados e Volumetria de Arqueação
+                </h3>
+            </div>
+            <table class="w-full text-left border-collapse text-sm">
+                <tbody class="divide-y divide-slate-100">
+                    <tr class="hover:bg-slate-50/30">
+                        <td class="px-6 py-3.5 font-medium text-slate-500 w-1/2">Calado Máximo Carregado</td>
+                        <td class="px-6 py-3.5 font-mono font-semibold text-slate-800">@Model.CaladoMaximo.ToString("N2") m</td>
+                    </tr>
+                    <tr class="hover:bg-slate-50/30">
+                        <td class="px-6 py-3.5 font-medium text-slate-500">Calado Leve</td>
+                        <td class="px-6 py-3.5 font-mono font-semibold text-slate-800">@Model.CaladoLeve.ToString("N2") m</td>
+                    </tr>
+                    <tr class="hover:bg-slate-50/30">
+                        <td class="px-6 py-3.5 font-medium text-slate-500">Arqueação Bruta (AB)</td>
+                        <td class="px-6 py-3.5 font-mono font-semibold text-slate-800">@Model.ArqueacaoBruta.ToString("N2")</td>
+                    </tr>
+                    <tr class="hover:bg-slate-50/30">
+                        <td class="px-6 py-3.5 font-medium text-slate-500">Arqueação Líquida (AL)</td>
+                        <td class="px-6 py-3.5 font-mono font-semibold text-slate-800">@Model.ArqueacaoLiquida.ToString("N2")</td>
+                    </tr>
+                    <tr class="hover:bg-slate-50/30">
+                        <td class="px-6 py-3.5 font-medium text-slate-500">TPB (Toneladas de Porte Bruto)</td>
+                        <td class="px-6 py-3.5 font-mono font-semibold text-slate-800">@Model.Tpb.ToString("N2") t</td>
+                    </tr>
+                    <tr class="hover:bg-slate-50/30">
+                        <td class="px-6 py-3.5 font-medium text-slate-500">Massa de Lastro</td>
+                        <td class="px-6 py-3.5 font-mono font-semibold text-slate-800">@(Model.Lastro.HasValue ? $"{Model.Lastro.Value.ToString("N2")} t" : "Não Aplicável / Isento")</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="bg-slate-50 px-6 py-4 border-b border-slate-100">
+                <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-gauge-high text-slate-400"></i> Planta Propulsiva e Potências
+                </h3>
+            </div>
+            <table class="w-full text-left border-collapse text-sm">
+                <tbody class="divide-y divide-slate-100">
+                    <tr class="hover:bg-slate-50/30">
+                        <td class="px-6 py-3.5 font-medium text-slate-500 w-1/2">Motorização Instalada (Qtd. Máxima)</td>
+                        <td class="px-6 py-3.5 font-mono font-semibold text-slate-800">@Model.MotorizacaoMax motor(es)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
