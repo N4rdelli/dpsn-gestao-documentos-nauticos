@@ -1,0 +1,40 @@
+﻿@model dpsn_gestao_documentos_nauticos.ViewModel.DocumentoViewModel
+
+<h2>Editar Documento</h2>
+
+<form asp-action="Edit" method="post">
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" asp-for="EstaleiroId" />
+    <input type="hidden" asp-for="EmbarcacaoId" />
+
+    <fieldset>
+        <legend>Dados Gerais</legend>
+        <p>
+            <label>Número de Inscrição:</label><br />
+            <input asp-for="NumeroInscricao" />
+        </p>
+    </fieldset>
+
+    <fieldset>
+        <legend>Dados do Cliente (Armador)</legend>
+        <p><label>Nome:</label><br /><input asp-for="Nome" /></p>
+        <p><label>CPF/CNPJ:</label><br /><input asp-for="Cpf_cnpj" /></p>
+        <p><label>Ano de Construção:</label><br /><input asp-for="Ano_contrucao" /></p>
+        <p><label>Número do Chassi:</label><br /><input asp-for="NumeroChassi" /></p>
+    </fieldset>
+
+    <fieldset>
+        <legend>Endereço do Cliente</legend>
+        <p><label>CEP:</label><br /><input asp-for="Cep" /></p>
+        <p><label>Logradouro:</label><br /><input asp-for="Logradouro" /></p>
+        <p><label>Número:</label><br /><input asp-for="Numero" /></p>
+        <p><label>Complemento:</label><br /><input asp-for="Complemento" /></p>
+        <p><label>Bairro:</label><br /><input asp-for="Bairro" /></p>
+        <p><label>Cidade:</label><br /><input asp-for="Cidade" /></p>
+        <p><label>Estado:</label><br /><input asp-for="Estado" /></p>
+    </fieldset>
+
+    <button type="submit">Salvar Alterações</button>
+    <a asp-action="Index">Voltar para a Lista</a>
+</form>

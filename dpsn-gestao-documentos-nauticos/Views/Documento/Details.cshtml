@@ -1,0 +1,23 @@
+﻿@model dpsn_gestao_documentos_nauticos.Models.Documento
+
+<h2>Detalhes do Documento</h2>
+
+<dl>
+
+    <dt>Estaleiro (Construtor)</dt>
+    <dd>@Model.Estaleiro?.RazaoSocial</dd>
+
+    <dt>Embarcação</dt>
+    <dd>@Model.Embarcacao?.Nome</dd>
+
+    <dt>Armador (Cliente)</dt>
+    <dd>@Model.Cliente?.Nome - CPF/CNPJ: @Model.Cliente?.Cpf_cnpj</dd>
+
+    <dt>Status de Assinatura</dt>
+    <dd>@(Model.StatusAssinatura ? "Assinado" : "Pendente")</dd>
+</dl>
+
+<p>
+    <a asp-action="Edit" asp-route-id="@Model.Id">Editar</a> |
+    <a asp-action="Index">Voltar para a Lista</a>
+</p>

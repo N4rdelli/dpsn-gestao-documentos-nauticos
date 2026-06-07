@@ -1,50 +1,39 @@
 ﻿@model IEnumerable<dpsn_gestao_documentos_nauticos.Models.Documento>
 
-<h2>Envio de PDFs Assinados em Lote</h2>
-<p>Selecione abaixo os documentos que deseja disparar por e-mail para os estaleiros parceiros.</p>
+<h2>Enviar Documentos Assinados por E-mail</h2>
 
-<form action="/Documento/ProcessarEnviarLote" method="post">
+@if (TempData["MensagemErro"] != null)
+{
+    <p style="color: red;">@TempData["MensagemErro"]</p>
+}
+
+<form asp-action="ProcessarEnviarLote" asp-controller="Documento" method="post">
     @Html.AntiForgeryToken()
-
-    <div style="margin-bottom: 10px;">
-        <input type="checkbox" id="chkSelecionarTodos" /> <b>Selecionar Todos os Documentos</b>
-    </div>
 
     <table border="1" cellpadding="5" cellspacing="0">
         <thead>
             <tr>
                 <th>Selecionar</th>
-                <th>Estaleiro Destinatário</th>
-                <th>E-mail do Estaleiro</th>
+                <th>Estaleiro</th>
                 <th>Embarcação</th>
-                <th>Cliente</th>
+                <th>Arquivo</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var item in Model)
             {
                 <tr>
-                    <td align="center">
-                        <input type="checkbox" name="documentosSelecionados" value="@item.Id" class="chkDoc" />
+                    <td>
+                        <input type="checkbox" name="documentosSelecionados" value="@item.Id" />
                     </td>
                     <td>@item.Estaleiro?.NomeFantasia</td>
-                    <td>@item.Estaleiro?.Email</td>
                     <td>@item.Embarcacao?.Nome</td>
-                    <td>@item.Cliente?.Nome</td>
+                    <td>@item.CaminhoPdfAssinado</td>
                 </tr>
             }
         </tbody>
     </table>
-
-    <div style="margin-top: 15px;">
-        <button type="submit" style="font-size: 14px; padding: 5px 10px;">Enviar Selecionados por E-mail</button>
-        <a href="/Documento/Index">Cancelar e Voltar</a>
-    </div>
+    <br />
+    <button type="submit">Enviar E-mails</button>
+    <a asp-action="Index">Voltar</a>
 </form>
-
-<script>
-    document.getElementById('chkSelecionarTodos').addEventListener('change', function() {
-        const checkboxes = document.querySelectorAll('.chkDoc');
-        checkboxes.forEach(chk => chk.checked = this.checked);
-    });
-</script>

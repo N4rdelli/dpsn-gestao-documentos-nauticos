@@ -40,10 +40,11 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
 
             if (User.IsInRole("Estaleiro"))
             {
-                // Regra de Negócio: O estaleiro só vê documentos dele que JÁ FORAM ASSINADOS
+                // Regra atualizada: O estaleiro vê TODOS os seus documentos, 
+                // para poder editar e visualizar detalhes. A regra do PDF assinado fica na View.
                 var userId = _userManager.GetUserId(User);
                 documentos = await _context.Documentos
-                    .Find(d => d.Estaleiro.Id == userId && d.StatusAssinatura == true && d.CaminhoPdfAssinado != null)
+                    .Find(d => d.Estaleiro.Id == userId)
                     .ToListAsync();
             }
             else
@@ -141,7 +142,94 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
 
             return await PreencherListasErro(model);
         }
+        // GET: Documento/Edit/5
+        public async Task<IActionResult> Edit(string id)
+        {
+            if (id == null) return NotFound();
 
+            var documento = await _context.Documentos.Find(d => d.Id == id).FirstOrDefaultAsync();
+            if (documento == null) return NotFound();
+
+            // Mapeia do Banco para a ViewModel
+            var viewModel = new DocumentoViewModel
+            {
+                EstaleiroId = documento.Estaleiro?.Id,
+                EmbarcacaoId = documento.Embarcacao?.IdEmbarcacao,
+                Ano_contrucao = documento.Cliente?.Ano_contrucao,
+                NumeroChassi = documento.Cliente?.NumeroChassi,
+                Nome = documento.Cliente?.Nome,
+                Cpf_cnpj = documento.Cliente?.Cpf_cnpj,
+                Cep = documento.Cliente?.Endereco?.Cep,
+                Logradouro = documento.Cliente?.Endereco?.Logradouro,
+                Numero = documento.Cliente?.Endereco?.Numero,
+                Complemento = documento.Cliente?.Endereco?.Complemento,
+                Bairro = documento.Cliente?.Endereco?.Bairro,
+                Cidade = documento.Cliente?.Endereco?.Cidade,
+                Estado = documento.Cliente?.Endereco?.Estado,
+                NumeroInscricao = documento.NumeroInscricao
+            };
+
+            // Aproveita o método privado para preencher os Dropdowns
+            return await PreencherListasErro(viewModel);
+        }
+
+        // POST: Documento/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(string id, DocumentoViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var documentoNoBanco = await _context.Documentos.Find(d => d.Id == id).FirstOrDefaultAsync();
+                    if (documentoNoBanco == null) return NotFound();
+
+                    var estaleiro = await _context.Estaleiros.Find(e => e.Id == model.EstaleiroId).FirstOrDefaultAsync();
+                    var embarcacao = await _context.Embarcacoes.Find(e => e.IdEmbarcacao == model.EmbarcacaoId).FirstOrDefaultAsync();
+
+                    if (estaleiro == null || embarcacao == null)
+                    {
+                        ModelState.AddModelError(string.Empty, "Estaleiro ou Embarcação inválidos.");
+                        return await PreencherListasErro(model);
+                    }
+
+                    // Atualiza os dados do documento
+                    documentoNoBanco.Estaleiro = estaleiro;
+                    documentoNoBanco.Embarcacao = embarcacao;
+                    documentoNoBanco.NumeroInscricao = model.NumeroInscricao;
+
+                    documentoNoBanco.Cliente = new Cliente
+                    {
+                        Ano_contrucao = model.Ano_contrucao,
+                        NumeroChassi = model.NumeroChassi,
+                        Nome = model.Nome,
+                        Cpf_cnpj = model.Cpf_cnpj,
+                        Endereco = new Endereco
+                        {
+                            Cep = model.Cep,
+                            Logradouro = model.Logradouro,
+                            Numero = model.Numero,
+                            Complemento = model.Complemento,
+                            Bairro = model.Bairro,
+                            Cidade = model.Cidade,
+                            Estado = model.Estado
+                        }
+                    };
+
+                    await _context.Documentos.ReplaceOneAsync(d => d.Id == id, documentoNoBanco);
+                    TempData["MensagemSucesso"] = "Documento atualizado com sucesso!";
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    TempData["MensagemErro"] = "Erro inesperado ao editar o documento.";
+                    Console.WriteLine(ex.Message);
+                }
+            }
+
+            return await PreencherListasErro(model);
+        }
         // GET: Documento/Delete/5
         public async Task<IActionResult> Delete(string id)
         {
@@ -159,6 +247,8 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
             await _context.Documentos.DeleteOneAsync(d => d.Id == id);
+            TempData["MensagemSucesso"] = "Documento deletado com sucesso!";
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -223,14 +313,54 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
                     page.Size(PageSizes.A4);
                     page.Margin(2, Unit.Centimetre);
                     page.DefaultTextStyle(x => x.FontSize(11));
-                    page.Header().Text($"MINUTA DE DOCUMENTO NAVAL - ID {doc.Id}").FontSize(16).Bold();
+                    page.Header().Text($"TERMO DE RESPONSABILIDADE DE CONSTRUÇÃO").FontSize(14).Bold().Underline();
                     page.Content().Column(col =>
                     {
+                        col.Item().Text($"Certifico, para comprovação perante a Capitania dos portos, que a embarcação modelo {doc.Embarcacao.Nome}, foi construída por {doc.Estaleiro?.RazaoSocial}, CNPJ {doc.Estaleiro?.Cnpj}, com as seguintes características:");
                         col.Spacing(10);
-                        col.Item().Text($"Estaleiro: {doc.Estaleiro?.NomeFantasia}");
-                        col.Item().Text($"Embarcação: {doc.Embarcacao?.Nome}");
-                        col.Item().Text($"Cliente/Armador: {doc.Cliente?.Nome}");
-                        col.Item().Text($"Chassi: {doc.Cliente?.NumeroChassi}");
+                        col.Item().Text($"a-) Comprimento Total: {doc.Embarcacao?.ComprimentoTotal}");
+                        col.Item().Text($"b-) Boca Moldada: {doc.Embarcacao?.BocaMoldada}");
+                        col.Item().Text($"c-) Pontal Moldado: {doc.Embarcacao?.PontalMoldado}");
+                        col.Item().Text($"d-) Calado Máximo: {doc.Embarcacao?.CaladoMaximo}");
+                        col.Item().Text($"e-) Calado Leve: {doc.Embarcacao?.CaladoLeve}");
+                        col.Item().Text($"f-) Arqueação Bruta:  {doc.Embarcacao?.ArqueacaoBruta}");
+                        col.Item().Text($"g-) Arqueação Liquida:  {doc.Embarcacao?.ArqueacaoLiquida}");
+                        col.Item().Text($"h-) TPB: {doc.Embarcacao?.Tpb}");
+                        col.Item().Text($"i-) Contorno: {doc.Embarcacao?.Contorno}");
+                        col.Item().Text($"j-) Lastro: {doc.Embarcacao?.Lastro ?? 0}");
+                        col.Item().Text($"k-) Área de Navegação / Tipo de serviço: {doc.Embarcacao?.AreaNavegacaoTipoServico}");
+                        col.Item().Text($"l-) Tipo de Embarcação: {doc.Embarcacao?.TipoEmbarcacao}");
+                        col.Item().Text($"m-) Material do Casco: {doc.Embarcacao?.MaterialCasco}");
+                        col.Item().Text($"n-) Motorização Máxima: {doc.Embarcacao?.MotorizacaoMax}");
+                        col.Item().Text($"o-) Motorização Mínima: {doc.Embarcacao?.MotorizacaoMin}");
+                        col.Item().Text($"p-) Construtor: {doc.Estaleiro?.RazaoSocial}");
+                        col.Item().Text($"q-) Ano de Construção: {doc.Cliente?.Ano_contrucao}");
+                        col.Item().Text($"r-) N° Casco/Chassi: {doc.Cliente?.NumeroChassi}");
+                        col.Item().Text($"s-) Modelo: {doc.Embarcacao?.Nome}");
+                        col.Item().Text($"t-) N° de Inscrição: {doc.NumeroInscricao}");
+                        col.Item().Text($"u-) Armador: {doc.Cliente?.Nome} / CNPJ {doc.Cliente?.Cpf_cnpj}");
+                        col.Item().Text($"v-) Endereço: {doc.Cliente?.Endereco.Logradouro}, n° {doc.Cliente?.Endereco.Numero} {doc.Cliente?.Endereco.Complemento} - " +
+                            $"{doc.Cliente?.Endereco.Bairro} - {doc.Cliente?.Endereco.Cidade}/{doc.Cliente?.Endereco.Estado} - CEP {doc.Cliente?.Endereco.Cep}");
+                        col.Spacing(5);
+                        col.Item().Text($"Atende as prescrições aplicáveis constantes na NORMAM-211/DPC e apresenta condições de segurança, estabilidade e estruturais satisfatórias," +
+                            $"para operar com a seguinte capacidade de pessoas:");
+                        col.Item().Text($"Tripulantes: {doc.Embarcacao?.Tripulantes}");
+                        col.Item().Text($"Passageiros: {doc.Embarcacao?.Passageiros}");
+                        col.Item().Text($"Certifico, ainda que a embarcação foi construída em comformidade com as normas e regulamentos nacionas em vigor.");
+                        col.Item().Text($"Declaro outrossim que qualquer modificação de lastreamento, tancagem, arranjo geral ou alterações de qualquer monta," +
+                            $"bem como incidentes ou sinistros, invalidam a presente declaração");
+                        col.Item().Text($"{doc.Estaleiro?.Endereco.Estado}, {DateTime.UtcNow:d/MMMM/yyyy}");
+                        col.Item().Text($"___________________________");
+                        col.Item().Text($"Tecnólogo Naval Responsável");
+                        col.Item().Text($"Helcio Marcelo De Russi");
+                        col.Item().Text($"CREA: 5060478012");
+                    });
+                    page.Footer().AlignCenter().Text(text =>
+                    {
+                        text.Span($"{doc.Estaleiro?.Endereco.Logradouro}, n° {doc.Estaleiro?.Endereco.Numero} - Bairro: {doc.Estaleiro?.Endereco.Bairro} " +
+                            $"- {doc.Estaleiro?.Endereco.Cidade} " +
+                            $"- {doc.Estaleiro?.Endereco.Estado} -" +
+                            $" CEP: {doc.Estaleiro?.Endereco.Cep} - CNPJ: {doc.Estaleiro?.Cnpj} ");
                     });
                 });
             }).GeneratePdf();

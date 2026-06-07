@@ -82,7 +82,11 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
                     Contorno = emb.Contorno,
                     Lastro = emb.Lastro,
                     AreaNavegacaoTipoServico = emb.AreaNavegacaoTipoServico,
-                    MotorizacaoMax = emb.MotorizacaoMax
+                    MotorizacaoMax = emb.MotorizacaoMax,
+                    MotorizacaoMin = (int)emb.MotorizacaoMin,
+                    Tripulantes = emb.Tripulantes,
+                    Passageiros = emb.Passageiros,
+
                 });
             }
 
@@ -165,7 +169,10 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
                         AreaNavegacaoTipoServico = model.AreaNavegacaoTipoServico,
                         TipoEmbarcacao = model.TipoEmbarcacao,
                         MaterialCasco = model.MaterialCasco,
-                        MotorizacaoMax = model.MotorizacaoMax
+                        MotorizacaoMax = model.MotorizacaoMax,
+                        MotorizacaoMin = (int)model.MotorizacaoMin,
+                        Tripulantes = model.Tripulantes,
+                        Passageiros = model.Passageiros,
                         // PotenciaTotalHp e ComprimentoRegra removidos com sucesso
                     };
 
@@ -223,7 +230,10 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
                 AreaNavegacaoTipoServico = embarcacao.AreaNavegacaoTipoServico,
                 TipoEmbarcacao = embarcacao.TipoEmbarcacao,
                 MaterialCasco = embarcacao.MaterialCasco,
-                MotorizacaoMax = embarcacao.MotorizacaoMax
+                MotorizacaoMax = embarcacao.MotorizacaoMax,
+                MotorizacaoMin = (int)embarcacao.MotorizacaoMin,
+                Tripulantes = embarcacao.Tripulantes,
+                Passageiros = embarcacao.Passageiros,
             };
 
             await CarregarEstaleirosDropdown(model);
@@ -276,6 +286,10 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
                     existing.TipoEmbarcacao = model.TipoEmbarcacao;
                     existing.MaterialCasco = model.MaterialCasco;
                     existing.MotorizacaoMax = model.MotorizacaoMax;
+                    existing.MotorizacaoMin = (int)model.MotorizacaoMin;
+                    existing.Tripulantes = model.Tripulantes;
+                    existing.Passageiros = model.Passageiros;
+                    
 
                     // Executa a substituição do documento antigo pelo atualizado no MongoDB
                     var result = await _embarcacoesCollection.ReplaceOneAsync(x => x.IdEmbarcacao == id, existing);
@@ -338,7 +352,11 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
                 AreaNavegacaoTipoServico = embarcacao.AreaNavegacaoTipoServico,
                 TipoEmbarcacao = embarcacao.TipoEmbarcacao,
                 MaterialCasco = embarcacao.MaterialCasco,
-                MotorizacaoMax = embarcacao.MotorizacaoMax
+                MotorizacaoMax = embarcacao.MotorizacaoMax,
+                MotorizacaoMin = (int)embarcacao.MotorizacaoMin,
+                Tripulantes = embarcacao.Tripulantes,
+                Passageiros = embarcacao.Passageiros,
+
             };
 
             // 4. Busca o Nome Fantasia do estaleiro para exibir na tela de detalhes
@@ -392,7 +410,10 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
                 AreaNavegacaoTipoServico = embarcacao.AreaNavegacaoTipoServico,
                 TipoEmbarcacao = embarcacao.TipoEmbarcacao,
                 MaterialCasco = embarcacao.MaterialCasco,
-                MotorizacaoMax = embarcacao.MotorizacaoMax
+                MotorizacaoMax = embarcacao.MotorizacaoMax,
+                MotorizacaoMin = (int)embarcacao.MotorizacaoMin,
+                Tripulantes = embarcacao.Tripulantes,
+                Passageiros = embarcacao.Passageiros,
             };
 
             // Busca o nome do estaleiro apenas para exibição amigável na tela de confirmação

@@ -1,0 +1,17 @@
+﻿@model dpsn_gestao_documentos_nauticos.Models.Documento
+
+<h2>Deletar Documento</h2>
+
+<h3>Tem certeza que deseja deletar este documento?</h3>
+<div>
+    <p><strong>Estaleiro:</strong> @Model.Estaleiro?.NomeFantasia</p>
+    <p><strong>Embarcação:</strong> @Model.Embarcacao?.Nome</p>
+    <p><strong>Cliente:</strong> @Model.Cliente?.Nome</p>
+</div>
+
+<form asp-action="Delete" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" value="@Model.Id" />
+    <button type="submit" style="color: red;">Confirmar Deleção</button>
+    <a asp-action="Index">Cancelar</a>
+</form>

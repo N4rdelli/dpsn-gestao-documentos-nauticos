@@ -67,9 +67,9 @@ namespace dpsn_gestao_documentos_nauticos.ViewModel
 
         [Required(ErrorMessage = "Motorização Máxima é obrigatória.")]
         public int MotorizacaoMax { get; set; }
-
-        [Required(ErrorMessage = "Motorização Mínima é obrigatória.")]
         public int MotorizacaoMin { get; set; }
+        public int Tripulantes { get; set; }
+        public int Passageiros { get; set; }
 
         public DateTime Data { get; set; } = DateTime.Now;
 

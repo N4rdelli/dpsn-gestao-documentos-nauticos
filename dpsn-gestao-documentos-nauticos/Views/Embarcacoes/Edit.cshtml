@@ -125,6 +125,21 @@
             </div>
         </div>
     </div>
+    <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+        <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-3 mb-5">Seção 5: Tripulação e Passageiros</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div>
+                <label asp-for="Tripulantes" class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1 block">N° de Tripulantes</label>
+                <input asp-for="Tripulantes" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500/20" />
+                <span asp-validation-for="Tripulantes" class="text-xs text-red-500 mt-1 block font-medium"></span>
+            </div>
+            <div>
+                <label asp-for="Passageiros" class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1 block">N° de Passageirso</label>
+                <input asp-for="Passageiros" type="number" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm font-mono" />
+                <span asp-validation-for="Passageiros" class="text-xs text-red-500 mt-1 block font-medium"></span>
+            </div>
+        </div>
+    </div>
 
     <div class="flex items-center justify-end space-x-3 pt-2">
         <a asp-action="Index" class="px-5 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
