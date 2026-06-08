@@ -33,7 +33,7 @@ namespace dpsn_gestao_documentos_nauticos.Seeds
                 var adminUser = new ApplicationUser
                 {
                     UserName = "jpderussi@gmail.com",
-                    Email ="jpderussi@gmail.com",
+                    Email = "jpderussi@gmail.com",
                     EmailConfirmed = true
                 };
 
@@ -42,7 +42,8 @@ namespace dpsn_gestao_documentos_nauticos.Seeds
                 {
                     Console.WriteLine($"SEED: Usuário admin {adminUser.UserName} foi criado");
                     await userManager.AddToRoleAsync(adminUser, "Admin");
-                } else { return; }
+                }
+                else { return; }
             }
         }
     }
