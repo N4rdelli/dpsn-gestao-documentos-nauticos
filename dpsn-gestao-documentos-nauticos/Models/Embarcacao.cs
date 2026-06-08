@@ -28,7 +28,9 @@ namespace dpsn_gestao_documentos_nauticos.Models
         public string TipoEmbarcacao { get; set; }
         public string MaterialCasco { get; set; }
         public int MotorizacaoMax { get; set; }
-        public int MotorizacaoMin { get; set; }
+        public int? MotorizacaoMin { get; set; }
+        public int Tripulantes { get; set; }
+        public int Passageiros { get; set; }
         public DateTime Data { get; set; } = DateTime.UtcNow;
     }
 }

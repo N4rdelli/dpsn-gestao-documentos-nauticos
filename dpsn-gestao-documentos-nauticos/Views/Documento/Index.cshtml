@@ -1,0 +1,84 @@
+﻿@model IEnumerable<dpsn_gestao_documentos_nauticos.Models.Documento>
+
+<h2>Listagem de Documentos</h2>
+
+@if (TempData["MensagemSucesso"] != null)
+{
+    <p style="color: green;">@TempData["MensagemSucesso"]</p>
+}
+@if (TempData["MensagemErro"] != null)
+{
+    <p style="color: red;">@TempData["MensagemErro"]</p>
+}
+
+<p>
+    <a href="/Documento/Create">Criar Novo Documento</a>
+    @if (User.IsInRole("Tecnologo") || User.IsInRole("Admin"))
+    {
+        <span> | </span> <a asp-action="EnviarLote" asp-controller="Documento">Enviar Lotes por E-mail</a>
+    }
+</p>
+
+<table border="1" cellpadding="5" cellspacing="0">
+    <thead>
+        <tr>
+            <th>Estaleiro</th>
+            <th>Embarcação</th>
+            <th>Cliente</th>
+            <th>Status Assinatura</th>
+            <th>Ações do Documento</th>
+            <th>Ações de PDF</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Estaleiro?.NomeFantasia</td>
+                <td>@item.Embarcacao?.Nome</td>
+                <td>@item.Cliente?.Nome</td>
+                <td>@(item.StatusAssinatura ? "Assinado (True)" : "Pendente (False)")</td>
+
+                <td>
+                    <a asp-action="Details" asp-controller="Documento" asp-route-id="@item.Id" style="color: gray;">Details</a> |
+                    <a asp-action="Edit" asp-controller="Documento" asp-route-id="@item.Id" style="color: gray;">Edit</a> |
+                    <a asp-action="Delete" asp-controller="Documento" asp-route-id="@item.Id" style="color: gray;">Delete</a>
+                </td>
+
+                <td>
+                    @if (User.IsInRole("Estaleiro"))
+                    {
+                        @if (item.StatusAssinatura)
+                        {
+                            <a asp-action="DownloadPdfAssinado" asp-controller="Documento" asp-route-id="@item.Id" style="color: green; font-weight: bold;">Baixar PDF Assinado</a>
+                        }
+                        else
+                        {
+                            <span style="color: orange;">Aguardando Assinatura</span>
+                        }
+                    }
+                    else if (User.IsInRole("Tecnologo") || User.IsInRole("Admin"))
+                    {
+                        <a asp-action="DownloadMinuta" asp-controller="Documento" asp-route-id="@item.Id">1. Baixar Minuta</a>
+
+                        @if (!item.StatusAssinatura)
+                        {
+                            <span> | </span>
+                            <form asp-action="AssinarEReenviar" asp-controller="Documento" method="post" enctype="multipart/form-data" style="display:inline;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <input type="file" name="arquivoPdf" accept=".pdf" required />
+                                <button type="submit">2. Reenviar PDF Assinado</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span> | </span>
+                            <a asp-action="DownloadPdfAssinado" asp-controller="Documento" asp-route-id="@item.Id" style="color: gray;">Arquivo Reenviado (Download)</a>
+                        }
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

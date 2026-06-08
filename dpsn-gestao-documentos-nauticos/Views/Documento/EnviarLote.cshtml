@@ -1,0 +1,39 @@
+﻿@model IEnumerable<dpsn_gestao_documentos_nauticos.Models.Documento>
+
+<h2>Enviar Documentos Assinados por E-mail</h2>
+
+@if (TempData["MensagemErro"] != null)
+{
+    <p style="color: red;">@TempData["MensagemErro"]</p>
+}
+
+<form asp-action="ProcessarEnviarLote" asp-controller="Documento" method="post">
+    @Html.AntiForgeryToken()
+
+    <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                <th>Selecionar</th>
+                <th>Estaleiro</th>
+                <th>Embarcação</th>
+                <th>Arquivo</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" name="documentosSelecionados" value="@item.Id" />
+                    </td>
+                    <td>@item.Estaleiro?.NomeFantasia</td>
+                    <td>@item.Embarcacao?.Nome</td>
+                    <td>@item.CaminhoPdfAssinado</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <br />
+    <button type="submit">Enviar E-mails</button>
+    <a asp-action="Index">Voltar</a>
+</form>
