@@ -21,5 +21,6 @@ namespace dpsn_gestao_documentos_nauticos.Models
         [Required(ErrorMessage = "O telefone é obrigatório.")]
         public string Telefone { get; set; }
         public Endereco Endereco { get; set; }
+        public DateTime DataCadastro { get; set; } = DateTime.UtcNow;
     }
 }

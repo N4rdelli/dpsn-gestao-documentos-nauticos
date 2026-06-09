@@ -22,8 +22,10 @@
     <div class="flex items-center gap-4 md:gap-6">
 
         <button class="bg-sky-800 hover:bg-sky-900 text-white px-4 py-2.5 rounded-md text-sm font-medium flex items-center gap-2 shadow-sm transition-all transform active:scale-95">
-            <i class="fa-solid fa-plus text-xs"></i>
-            <span class="hidden md:inline">Registrar Documento</span>
+            <a asp-action="Create" asp-controller="Documento">
+                <i class="fa-solid fa-plus text-xs"></i>
+                <span class="hidden md:inline">Registrar Documento</span>
+            </a>
         </button>
 
         @* <button class="relative p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-50 transition-colors focus:outline-none">

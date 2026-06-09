@@ -4,6 +4,7 @@ using dpsn_gestao_documentos_nauticos.ViewModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -31,44 +32,70 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
                                      await _userManager.IsInRoleAsync(user, "Tecnologo");
 
             var model = new DashboardViewModel();
+            List<Documento> documentos = new();
+            List<Estaleiro> estaleiros = new();
+            List<Embarcacao> embarcacoes = new();
+
 
             if (isTecnologoOrAdmin)
             {
-                model.IsEstaleiro = false;
 
-                // Dados consolidados, por enquanto fictícios
-                // Ainda temos que trocar para os dados reais no banco de dados
-                model.TotalDocumentosAssinados = 17;
-                model.TotalAssinaturasPendentes = 4;
-                model.TotalPrestesAExpirar = 7;
-                model.TotalEstaleiros = 4;
-                model.TotalEmbarcoes = 23;
+                model.IsEstaleiro = false;
+                
+                // Busca todos os estaleiros, documentos e embarcações do banco e adiciona a uma lista.
+                documentos = await _context.Documentos.Find(_ => true).ToListAsync();
+                estaleiros = await _context.Estaleiros.Find(_ => true).ToListAsync();
+                embarcacoes = await _context.Embarcacoes.Find(_ => true).ToListAsync();
+
+                // Consultas para preencher os dados na dashboard
+                model.TotalDocumentosAssinados = documentos.Count(d => d.StatusAssinatura == true);
+                model.TotalAssinaturasPendentes = documentos.Count(d => d.StatusAssinatura == false);
+                model.TotalPrestesAExpirar = documentos.Count(d => d.DataCriacaoDocumento <= DateTime.UtcNow.AddDays(-25) && d.DataAssinatura == null);
+                model.TotalEstaleiros = estaleiros.Count();
+                model.TotalEmbarcoes = embarcacoes.Count();
 
                 // Gráfico 2: Evolução Temporal Global (Novas Embarcações vs Novos Estaleiros)
-                model.MesesLabels = new List<string> { "Dez", "Jan", "Fev", "Mar", "Abr", "Mai" };
-                model.HistoricoSeries1 = new List<int> { 12, 15, 18, 19, 21, 23 }; // Embarcações
-                model.HistoricoSeries2 = new List<int> { 2, 2, 3, 3, 4, 4 };      // Estaleiros
+                model.MesesLabels = new List<string> { "Janeiro", "Feveveiro", "Março", "Abril", 
+                    "Maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro" };
+                for(int i = 0; i < 12; i++)
+                {
+                    int mes = i + 1;
+                    int countEmbarcacoes = embarcacoes.Count(e => e.Data.Month == mes);
+                    int countEstaleiros = estaleiros.Count(e => e.DataCadastro.Month == mes);
+                    model.HistoricoSeries1.Add(countEmbarcacoes); // Embarcações criadas por mês
+                    model.HistoricoSeries2.Add(countEstaleiros); //Estaleiros cadastrados por mês
+                }
 
                 // Gráfico 3: Exclusivo do Tecnólogo (Documentos por Estaleiro)
-                model.EstaleirosNomes = new List<string> { "Estaleiro Mauá", "Estaleiro Brasa", "Estaleiro Jurong", "Arsenal de Marinha" };
-                model.QuantidadeDocumentosPorEstaleiro = new List<int> { 8, 5, 3, 1 };
+                model.EstaleirosNomes = estaleiros.Select(e => e.NomeFantasia).ToList();
+                model.QuantidadeDocumentosPorEstaleiro = documentos.GroupBy(e => e.Estaleiro.Id).Select(g => g.Count()).ToList();
             }
             else
             {
                 model.IsEstaleiro = true;
+                documentos = await _context.Documentos.Find(_ => true).ToListAsync();
+                embarcacoes = await _context.Embarcacoes.Find(_ => true).ToListAsync();
 
                 // O ID do estaleiro é usado para filtrar: user.Id
                 // Dados filtrados (Somente o que pertence a este estaleiro específico)
                 // Os dados aqui também são fictícios ainda
-                model.TotalDocumentosAssinados = 8;
-                model.TotalAssinaturasPendentes = 2;
-                model.TotalPrestesAExpirar = 3;
-                model.TotalEmbarcoes = 9;      
+                model.TotalDocumentosAssinados = documentos.Where(d => d.Estaleiro.Id == user.Id).Count();
+                model.TotalAssinaturasPendentes = documentos.Where(d => d.Estaleiro.Id == user.Id && !d.StatusAssinatura).Count();
+                model.TotalPrestesAExpirar = documentos.Where(d => d.Estaleiro.Id == user.Id 
+                                                    && d.DataCriacaoDocumento <= DateTime.UtcNow.AddDays(-25) && d.DataAssinatura == null).Count();
+                model.TotalEmbarcoes = embarcacoes.Where(e => e.EstaleiroId == user.Id).Count();
 
                 // Gráfico 2: Evolução de Documentos do próprio Estaleiro (Assinados vs Pendentes)
-                model.MesesLabels = new List<string> { "Dez", "Jan", "Fev", "Mar", "Abr", "Mai" };
-                model.HistoricoSeries1 = new List<int> { 2, 4, 5, 5, 7, 8 }; // Histórico de documentos assinados por ele
-                model.HistoricoSeries2 = new List<int> { 1, 3, 2, 4, 1, 2 }; // Histórico de pendências dele
+                model.MesesLabels = new List<string> { "Janeiro", "Feveveiro", "Março", "Abril",
+                    "Maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro" };
+                for (int i = 0; i < 12; i++)
+                {
+                    int mes = i + 1;
+                    int countAssinados = documentos.Where(d => d.Estaleiro.Id == user.Id && d.StatusAssinatura == true && d.DataCriacaoDocumento.Month == mes).Count();
+                    int countPendentes = documentos.Where(d => d.Estaleiro.Id == user.Id && d.StatusAssinatura == false && d.DataCriacaoDocumento.Month == mes).Count();
+                    model.HistoricoSeries1.Add(countAssinados); // Histórico de documentos assinados por ele
+                    model.HistoricoSeries2.Add(countPendentes); // Histórico de pendências dele
+                }
             }
 
             return View(model);

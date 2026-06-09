@@ -40,7 +40,7 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
 
             if (User.IsInRole("Estaleiro"))
             {
-                // Regra atualizada: O estaleiro vê TODOS os seus documentos, 
+                // O estaleiro vê TODOS os seus documentos, 
                 // para poder editar e visualizar detalhes. A regra do PDF assinado fica na View.
                 var userId = _userManager.GetUserId(User);
                 documentos = await _context.Documentos
@@ -123,7 +123,7 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
                         Embarcacao = embarcacao,
                         Cliente = cliente,
                         NumeroInscricao = model.NumeroInscricao,
-                        DataAssinatura = DateTime.UtcNow,
+                        DataCriacaoDocumento = DateTime.UtcNow,
                         StatusAssinatura = false
                     };
 
@@ -349,7 +349,7 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
                         col.Item().Text($"Certifico, ainda que a embarcação foi construída em comformidade com as normas e regulamentos nacionas em vigor.");
                         col.Item().Text($"Declaro outrossim que qualquer modificação de lastreamento, tancagem, arranjo geral ou alterações de qualquer monta," +
                             $"bem como incidentes ou sinistros, invalidam a presente declaração");
-                        col.Item().Text($"{doc.Estaleiro?.Endereco.Estado}, {DateTime.UtcNow:d/MMMM/yyyy}");
+                        col.Item().Text($"{doc.Estaleiro?.Endereco.Estado}, {DateTime.UtcNow:d 'de' MMMM 'de' yyyy}");
                         col.Item().Text($"___________________________");
                         col.Item().Text($"Tecnólogo Naval Responsável");
                         col.Item().Text($"Helcio Marcelo De Russi");
@@ -383,7 +383,7 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
             var pastaDestino = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "documentos_assinados");
             if (!Directory.Exists(pastaDestino)) Directory.CreateDirectory(pastaDestino);
 
-            var nomeArquivo = $"Doc_Assinado_{id}_{DateTime.UtcNow.Ticks}.pdf";
+            var nomeArquivo = $"Doc_Assinado_{id}.pdf";
             var caminhoCompleto = Path.Combine(pastaDestino, nomeArquivo);
 
             using (var stream = new FileStream(caminhoCompleto, FileMode.Create))
@@ -395,7 +395,8 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
             var filter = Builders<Documento>.Filter.Eq(d => d.Id, id);
             var update = Builders<Documento>.Update
                 .Set(d => d.StatusAssinatura, true)
-                .Set(d => d.CaminhoPdfAssinado, nomeArquivo);
+                .Set(d => d.CaminhoPdfAssinado, nomeArquivo)
+                .Set(d => d.DataAssinatura, DateTime.UtcNow);
 
             await _context.Documentos.UpdateOneAsync(filter, update);
 

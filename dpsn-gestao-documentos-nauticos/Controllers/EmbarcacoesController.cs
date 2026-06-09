@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 
 namespace dpsn_gestao_documentos_nauticos.Controllers
 {
+    [Authorize]
     public class EmbarcacoesController : Controller
     {
         private readonly IMongoCollection<Embarcacao> _embarcacoesCollection;
