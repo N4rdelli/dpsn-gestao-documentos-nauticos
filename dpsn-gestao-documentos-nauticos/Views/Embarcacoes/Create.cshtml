@@ -9,8 +9,19 @@
     <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Cadastrar Embarcação</h1>
     <p class="text-sm text-slate-500 mt-1">Preencha os parâmetros de engenharia e dimensões estruturais para emissão de relatórios.</p>
 </div>
+<div class="card-header bg-light">
+    <strong>Importar dados via PDF</strong>
+</div>
 
-<form asp-action="Create" method="post" class="space-y-6">
+
+<form asp-action="importPdf" asp-controller="Embarcacoes" method="post" enctype="multipart/form-data" class="form-inline">
+    <div class="form-group mb-2">
+        <label for="arquivoPdf" class="mr-2">Selecione o documento da Marinha (.pdf):</label>
+        <input type="file" name="arquivo" id="arquivoPdf" class="form-control-file" accept=".pdf" required />
+    </div>
+    <button type="submit" class="btn btn-primary mb-2">Extrair Dados</button>
+</form>
+<form asp-action="Create" asp-controller="Embarcacoes" method="post" class="space-y-6">
     @Html.AntiForgeryToken()
     <div asp-validation-summary="ModelOnly" class="text-xs text-red-500 list-disc pl-5"></div>
 

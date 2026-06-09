@@ -1,15 +1,19 @@
-﻿using dpsn_gestao_documentos_nauticos.Models;
-using dpsn_gestao_documentos_nauticos.Data;
+﻿using dpsn_gestao_documentos_nauticos.Data;
+using dpsn_gestao_documentos_nauticos.Models;
+using dpsn_gestao_documentos_nauticos.ViewModel;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Authorization;
 using MongoDB.Driver;
-using dpsn_gestao_documentos_nauticos.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using UglyToad.PdfPig;
+using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
 namespace dpsn_gestao_documentos_nauticos.Controllers
 {
@@ -127,6 +131,147 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
 
             await CarregarEstaleirosDropdown(model);
             return View(model);
+        }
+        // Create importando o PDF de embarcação
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> importPdf(IFormFile arquivo)
+        {
+            //  Garante que o arquivo foi enviado e é um PDF
+            if (arquivo == null || arquivo.Length == 0)
+            {
+                ModelState.AddModelError("", "Por favor, selecione um arquivo.");
+                return View("Create", new EmbarcacaoViewModel());
+            }
+
+            var extensao = Path.GetExtension(arquivo.FileName).ToLowerInvariant();
+            if (extensao != ".pdf" || arquivo.ContentType != "application/pdf")
+            {
+                ModelState.AddModelError("", "O arquivo enviado não é um PDF válido.");
+                return View("Create", new EmbarcacaoViewModel());
+            }
+
+            var viewModel = new EmbarcacaoViewModel();
+
+            // Se o usuário logado for um Estaleiro, pré-vincula o GUID dele
+            var currentUserId = _userManager.GetUserId(User);
+            var isEstaleiro = User?.IsInRole("Estaleiro") ?? false;
+
+            if (isEstaleiro && !string.IsNullOrEmpty(currentUserId))
+            {
+                viewModel.EstaleiroId = currentUserId;
+            }
+
+
+            //  Extração de texto usando PdfPig
+            // Abre o arquivo sem precisar de uum caminho
+            using (var stream = arquivo.OpenReadStream())
+            {
+                using (var pdf = PdfDocument.Open(stream))
+                {
+                    var textoCompleto = new StringBuilder();
+                    // Percorre todas as páginas do PDF e concatena o texto
+                    foreach (var page in pdf.GetPages())
+                    {
+                        textoCompleto.AppendLine(page.Text);
+                    }
+
+                    // Envia o texto para o método de processar o texto para fazer o Regex
+                    viewModel = ProcessarTextoPdf(textoCompleto.ToString());
+                }
+            }
+            await CarregarEstaleirosDropdown(viewModel);
+
+            //  Retorna para a View 'Create' enviando a ViewModel preenchida para os inputs
+            return View("Create", viewModel);
+        }
+
+        private EmbarcacaoViewModel ProcessarTextoPdf(string texto)
+        {
+            var model = new EmbarcacaoViewModel();
+            // Padrões Regex
+            var regexNome = new Regex(@"(?i)embarcação\s+modelo\s+(?<valor>[^,]+)");
+            var regexComprimento = new Regex(@"(?i)Comprimento Total\s*:\s*(?<valor>[0-9.,]+)");
+            var regexBoca = new Regex(@"(?i)Boca Moldada\s*:\s*(?<valor>[0-9.,]+)");
+            var regexPontal = new Regex(@"(?i)Pontal Moldado\s*:\s*(?<valor>[0-9.,]+)");
+            var regexCaladoMax = new Regex(@"(?i)Calado Máximo\s*:\s*(?<valor>[0-9.,]+)");
+            var regexCaladoLeve = new Regex(@"(?i)Calado Leve\s*:\s*(?<valor>[0-9.,]+)");
+            var regexArqBruta = new Regex(@"(?i)Arqueação Bruta\s*:\s*(?<valor>[0-9.,]+)");
+            var regexArqLiquida= new Regex(@"(?i)Arqueação Liquida\s*:\s*(?<valor>[0-9.,]+)");
+            var regexTpb= new Regex(@"(?i)TPB\s*:\s*(?<valor>[0-9.,]+)");
+            var regexContorno= new Regex(@"(?i)Contorno\s*:\s*(?<valor>[0-9.,]+)");
+            var regexLastro= new Regex(@"(?i)Lastro\s*:\s*(?<valor>[0-9.,]+)");
+            var regexAreaNav = new Regex(@"(?i)Área de Navegação / Tipo de serviço\s*:\s*(?<valor>[^.]+)");
+            var regexTipoEmb = new Regex(@"(?i)Tipo de Embarcação\s*:\s*(?<valor>.+?)(?=[a-z]\))", RegexOptions.Singleline);
+            var regexMaterialCasco = new Regex(@"(?i)Material do Casco\s*:\s*(?<valor>.+?)(?=[a-z]\))", RegexOptions.Singleline);
+            var regexMotMax = new Regex(@"(?i)Motorização Máxima\s*:\s*(?<valor>.+)");
+            var regexMotMin = new Regex(@"(?i)Motorização Minima\s*:\s*(?<valor>.+)");
+            var regexTripulantes = new Regex(@"(?i)Tripulantes\s*:\s*(?<valor>.+)");
+            var regexPassageiros = new Regex(@"(?i)Passageiros\s*:\s*(?<valor>.+)");
+
+            // MAPEAMENTO - STRINGS
+            var matchNome = regexNome.Match(texto);
+            if (matchNome.Success) model.Nome = matchNome.Groups["valor"].Value.Trim();
+
+            var matchAreaNav = regexAreaNav.Match(texto);
+            if (matchAreaNav.Success) model.AreaNavegacaoTipoServico = matchAreaNav.Groups["valor"].Value.Trim();
+
+            var matchTipoEmb = regexTipoEmb.Match(texto);
+            if (matchTipoEmb.Success) model.TipoEmbarcacao = matchTipoEmb.Groups["valor"].Value.Trim();
+
+            var matchMaterialCasco = regexMaterialCasco.Match(texto);
+            if (matchMaterialCasco.Success) model.MaterialCasco = matchMaterialCasco.Groups["valor"].Value.Trim();
+
+            // MAPEAMENTO - DECIMAIS (Usando o Helper)
+            model.ComprimentoTotal = ExtrairDecimal(regexComprimento.Match(texto)) ?? 0;
+            model.BocaMoldada = ExtrairDecimal(regexBoca.Match(texto)) ?? 0;
+            model.PontalMoldado = ExtrairDecimal(regexPontal.Match(texto)) ?? 0;
+            model.CaladoMaximo = ExtrairDecimal(regexCaladoMax.Match(texto)) ?? 0;
+            model.CaladoLeve = ExtrairDecimal(regexCaladoLeve.Match(texto)) ?? 0;
+            model.ArqueacaoBruta = ExtrairDecimal(regexArqBruta.Match(texto)) ?? 0;
+            model.ArqueacaoLiquida = ExtrairDecimal(regexArqLiquida.Match(texto)) ?? 0;
+            model.Tpb = ExtrairDecimal(regexTpb.Match(texto)) ?? 0;
+            model.Contorno = ExtrairDecimal(regexContorno.Match(texto)) ?? 0;
+
+            // Lastro é nullable (decimal?), então podemos atribuir o retorno direto
+            model.Lastro = ExtrairDecimal(regexLastro.Match(texto));
+
+            // MAPEAMENTO - INTEIROS (Usando o Helper)
+            model.MotorizacaoMax = ExtrairInteiro(regexMotMax.Match(texto));
+            model.MotorizacaoMin = ExtrairInteiro(regexMotMin.Match(texto));
+            model.Tripulantes = ExtrairInteiro(regexTripulantes.Match(texto));
+            model.Passageiros = ExtrairInteiro(regexPassageiros.Match(texto));
+
+            return model;
+        }
+        private decimal? ExtrairDecimal(Match match)
+        {
+            if (!match.Success) return null;
+
+            // Pega o valor, remove espaços e troca vírgula por ponto para o C# converter certo
+            string valorLimpo = match.Groups["valor"].Value.Trim().Replace(',', '.');
+
+            if (decimal.TryParse(valorLimpo, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal resultado))
+            {
+                return resultado;
+            }
+            return null;
+        }
+
+        private int ExtrairInteiro(Match match)
+        {
+            if (!match.Success) return 0;
+
+            string valorBruto = match.Groups["valor"].Value;
+
+            // Um "mini-regex" rápido: Se vier "300 HP" ou "5 Pessoas", ele arranca só os números (300 ou 5)
+            var apenasNumeros = Regex.Match(valorBruto, @"\d+").Value;
+
+            if (int.TryParse(apenasNumeros, out int resultado))
+            {
+                return resultado;
+            }
+            return 0;
         }
 
         // POST: Embarcacoes/Create

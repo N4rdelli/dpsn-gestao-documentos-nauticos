@@ -4,14 +4,40 @@
 
 <dl>
 
-    <dt>Estaleiro (Construtor)</dt>
+    <dt>Estaleiro</dt>
     <dd>@Model.Estaleiro?.RazaoSocial</dd>
+    <dd>@Model.Estaleiro?.NomeFantasia</dd>
+    <dd>@Model.Estaleiro?.Cnpj</dd>
+    <dd>@Model.Estaleiro?.Telefone</dd>
+    <dd>@Model.Estaleiro?.Endereco.Logradouro</dd>
+    <dd>@Model.Estaleiro?.Endereco.Numero</dd>
+    <dd>@Model.Estaleiro?.Endereco.Complemento</dd>
+    <dd>@Model.Estaleiro?.Endereco.Bairro</dd>
+    <dd>@Model.Estaleiro?.Endereco.Cidade</dd>
+    <dd>@Model.Estaleiro?.Endereco.Estado</dd>
 
     <dt>Embarcação</dt>
     <dd>@Model.Embarcacao?.Nome</dd>
+    <dd>@Model.Embarcacao?.ComprimentoTotal</dd>
+    <dd>@Model.Embarcacao?.BocaMoldada</dd>
+    <dd>@Model.Embarcacao?.PontalMoldado</dd>
+    <dd>@Model.Embarcacao?.CaladoMaximo</dd>
+    <dd>@Model.Embarcacao?.CaladoLeve</dd>
+    <dd>@Model.Embarcacao?.ArqueacaoBruta</dd>
+    <dd>@Model.Embarcacao?.ArqueacaoLiquida</dd>
+    <dd>@Model.Embarcacao?.Tpb</dd>
+    <dd>@Model.Embarcacao?.Contorno</dd>
+    <dd>@Model.Embarcacao?.Lastro</dd>
+    <dd>@Model.Embarcacao?.AreaNavegacaoTipoServico</dd>
+    <dd>@Model.Embarcacao?.TipoEmbarcacao</dd>
+    <dd>@Model.Embarcacao?.MaterialCasco</dd>
+    <dd>@Model.Embarcacao?.MotorizacaoMax</dd>
+    <dd>@Model.Embarcacao?.MotorizacaoMin</dd>
+    <dd>@Model.Embarcacao?.Tripulantes</dd>
+    <dd>@Model.Embarcacao?.Passageiros</dd
 
     <dt>Armador (Cliente)</dt>
-    <dd>@Model.Cliente?.Nome - CPF/CNPJ: @Model.Cliente?.Cpf_cnpj</dd>
+    <dd>@Model.Cliente?.Nome - CPF/CNPJ: @Model.Cliente?.Cpf_cnpj </dd>
 
     <dt>Status de Assinatura</dt>
     <dd>@(Model.StatusAssinatura ? "Assinado" : "Pendente")</dd>
