@@ -13,7 +13,15 @@ namespace dpsn_gestao_documentos_nauticos.Models
         public string NumeroInscricao { get; set; } = "A ser inscrita";
         public DateTime DataCriacaoDocumento { get; set; }
         public DateTime? DataAssinatura { get; set; }
-        public bool StatusAssinatura { get; set; } = false;
+
+        // Cria o enum que substitui o bool de StatusAssinatura
+        public enum StatusDocumento
+        {
+            RevisaoPendente = 0,
+            EmRevisao = 1,
+            Assinado = 2
+        }
+        public StatusDocumento Status { get; set; } = StatusDocumento.RevisaoPendente;
         public string? CaminhoPdfAssinado { get; set; }
 
     }

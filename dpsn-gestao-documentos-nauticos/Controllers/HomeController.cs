@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using static dpsn_gestao_documentos_nauticos.Models.Documento;
 
 namespace dpsn_gestao_documentos_nauticos.Controllers
 {
@@ -48,9 +49,9 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
                 embarcacoes = await _context.Embarcacoes.Find(_ => true).ToListAsync();
 
                 // Consultas para preencher os dados na dashboard
-                model.TotalDocumentosAssinados = documentos.Count(d => d.StatusAssinatura == true);
-                model.TotalAssinaturasPendentes = documentos.Count(d => d.StatusAssinatura == false);
-                model.TotalPrestesAExpirar = documentos.Count(d => d.DataCriacaoDocumento <= DateTime.UtcNow.AddDays(-25) && d.DataAssinatura == null);
+                model.TotalDocumentosAssinados = documentos.Count(d => d.Status == StatusDocumento.Assinado);
+                model.TotalAssinaturasPendentes = documentos.Count(d => d.Status != StatusDocumento.Assinado);
+                model.TotalPrestesAExpirar = documentos.Count(d => d.DataCriacaoDocumento <= DateTime.UtcNow.AddDays(-25) && d.Status != StatusDocumento.Assinado);
                 model.TotalEstaleiros = estaleiros.Count();
                 model.TotalEmbarcoes = embarcacoes.Count();
 
@@ -79,10 +80,10 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
                 // O ID do estaleiro é usado para filtrar: user.Id
                 // Dados filtrados (Somente o que pertence a este estaleiro específico)
                 // Os dados aqui também são fictícios ainda
-                model.TotalDocumentosAssinados = documentos.Where(d => d.Estaleiro.Id == user.Id).Count();
-                model.TotalAssinaturasPendentes = documentos.Where(d => d.Estaleiro.Id == user.Id && !d.StatusAssinatura).Count();
-                model.TotalPrestesAExpirar = documentos.Where(d => d.Estaleiro.Id == user.Id 
-                                                    && d.DataCriacaoDocumento <= DateTime.UtcNow.AddDays(-25) && d.DataAssinatura == null).Count();
+                model.TotalDocumentosAssinados = documentos.Count(d => d.Estaleiro.Id == user.Id && d.Status == StatusDocumento.Assinado);
+                model.TotalAssinaturasPendentes = documentos.Count(d => d.Estaleiro.Id == user.Id && d.Status != StatusDocumento.Assinado);
+                model.TotalPrestesAExpirar = documentos.Count(d => d.Estaleiro.Id == user.Id
+                                                    && d.DataCriacaoDocumento <= DateTime.UtcNow.AddDays(-25) && d.Status != StatusDocumento.Assinado);
                 model.TotalEmbarcoes = embarcacoes.Where(e => e.EstaleiroId == user.Id).Count();
 
                 // Gráfico 2: Evolução de Documentos do próprio Estaleiro (Assinados vs Pendentes)
@@ -91,8 +92,8 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
                 for (int i = 0; i < 12; i++)
                 {
                     int mes = i + 1;
-                    int countAssinados = documentos.Where(d => d.Estaleiro.Id == user.Id && d.StatusAssinatura == true && d.DataCriacaoDocumento.Month == mes).Count();
-                    int countPendentes = documentos.Where(d => d.Estaleiro.Id == user.Id && d.StatusAssinatura == false && d.DataCriacaoDocumento.Month == mes).Count();
+                    int countAssinados = documentos.Count(d => d.Estaleiro.Id == user.Id && d.Status == StatusDocumento.Assinado && d.DataCriacaoDocumento.Month == mes);
+                    int countPendentes = documentos.Count(d => d.Estaleiro.Id == user.Id && d.Status != StatusDocumento.Assinado && d.DataCriacaoDocumento.Month == mes);
                     model.HistoricoSeries1.Add(countAssinados); // Histórico de documentos assinados por ele
                     model.HistoricoSeries2.Add(countPendentes); // Histórico de pendências dele
                 }
