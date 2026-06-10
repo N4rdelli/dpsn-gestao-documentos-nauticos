@@ -12,6 +12,7 @@ using MongoDB.Driver;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using static dpsn_gestao_documentos_nauticos.Models.Documento;
 
 namespace dpsn_gestao_documentos_nauticos.Controllers
 {
@@ -124,7 +125,7 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
                         Cliente = cliente,
                         NumeroInscricao = model.NumeroInscricao,
                         DataCriacaoDocumento = DateTime.UtcNow,
-                        StatusAssinatura = false
+                        Status = StatusDocumento.RevisaoPendente
                     };
 
                     // Salva no MongoDB
@@ -260,6 +261,13 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
             var documento = await _context.Documentos.Find(d => d.Id == id).FirstOrDefaultAsync();
             if (documento == null) return NotFound();
 
+            // Se for Tecnólogo ou Admin e o documento ainda estiver pendente, inicia a revisão
+            if ((User.IsInRole("Tecnologo") || User.IsInRole("Admin")) && documento.Status == StatusDocumento.RevisaoPendente)
+            {
+                documento.Status = StatusDocumento.EmRevisao;
+                await _context.Documentos.ReplaceOneAsync(d => d.Id == id, documento);
+            }
+
             return View(documento);
         }
 
@@ -304,6 +312,13 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
         {
             var doc = await _context.Documentos.Find(d => d.Id == id).FirstOrDefaultAsync();
             if (doc == null) return NotFound();
+
+            // Regra de Negócio: Estaleiro só baixa se já estiver assinado. Tecnólogo/Admin baixam a qualquer momento para assinar.
+            if (User.IsInRole("Estaleiro") && doc.Status != StatusDocumento.Assinado)
+            {
+                TempData["MensagemErro"] = "Você só poderá baixar o documento após a conclusão da assinatura do Tecnólogo.";
+                return RedirectToAction(nameof(Index));
+            }
 
             // Gera o PDF base estruturado pelo QuestPDF
             byte[] pdfBytes = Document.Create(container =>
@@ -391,10 +406,10 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
                 await arquivoPdf.CopyToAsync(stream);
             }
 
-            // Atualiza o Status para True e vincula o arquivo físico
+            // Atualiza o Status para Assinado e vincula o arquivo físico
             var filter = Builders<Documento>.Filter.Eq(d => d.Id, id);
             var update = Builders<Documento>.Update
-                .Set(d => d.StatusAssinatura, true)
+                .Set(d => d.Status, StatusDocumento.Assinado)
                 .Set(d => d.CaminhoPdfAssinado, nomeArquivo)
                 .Set(d => d.DataAssinatura, DateTime.UtcNow);
 
@@ -423,7 +438,7 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
         {
             // Busca apenas os documentos que já foram assinados e possuem arquivo
             var assinados = await _context.Documentos
-                .Find(d => d.StatusAssinatura == true && d.CaminhoPdfAssinado != null)
+                .Find(d => d.Status == StatusDocumento.Assinado && d.CaminhoPdfAssinado != null)
                 .ToListAsync();
 
             return View(assinados);
