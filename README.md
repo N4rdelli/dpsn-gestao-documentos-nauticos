@@ -240,7 +240,7 @@
 > *Figura 5 — Diagrama MoLIC*
 > `Imagem ainda não disponível.`
 
-> Descreva brevemente os principais fluxos de interação representados no diagrama. Ex: fluxo de cadastro de estaleiro, fluxo de solicitação de documento, fluxo de assinatura digital...
+
 
 ---
 
@@ -290,7 +290,7 @@ A identidade visual da DPSN representa profissionalismo, confiabilidade e organi
 > *Figura 7 — Modelo de Navegação*
 > `Imagem ainda não disponível.`
 
-> Descrição do modelo de navegação.
+
 
 ---
 
