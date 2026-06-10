@@ -226,19 +226,7 @@
 | Objetivo | Legalizar suas embarcações |
 | Frustrações | Informações enviadas e armazenadas são desorganizadas. |
 
----
 
-### 6.2 Mapa de Empatia
-
-> *Figura 4 — Mapa de Empatia*
-> `Imagem ainda não disponível.`
-
----
-
-### 6.3 Diagrama MoLIC
-
-> *Figura 5 — Diagrama MoLIC*
-> `Imagem ainda não disponível.`
 
 
 
@@ -476,14 +464,9 @@ A geração de PDFs deve seguir um template fixo para garantir a padronização 
 
 ## 9. Caso de Uso
 
-### 9.1 Diagrama Geral
-
-> *Figura 8 — Diagrama de Caso de Uso*
-> `Imagem ainda não disponível.`
-
 ---
 
-### 9.2 Casos de Uso — Alto Nível
+### 9.1 Casos de Uso — Alto Nível
 
 | Caso de Uso | Atores | Referência |
 |-------------|--------|------------|
@@ -505,7 +488,7 @@ A geração de PDFs deve seguir um template fixo para garantir a padronização 
 
 ---
 
-### 9.3 Casos de Uso — Baixo Nível (Expandido)
+### 9.2 Casos de Uso — Baixo Nível (Expandido)
 
 #### Caso de Uso: Cadastrar Estaleiro
 
@@ -616,38 +599,6 @@ O dashboard apresenta indicadores gerenciais, estatísticas e acesso rápido aos
 
 ---
 
-### Gestão de Estaleiros
-
-> *Figura 12 — Lista de Estaleiros*
-
-`Imagem ainda não disponível.`
-
----
-
-### Gestão de Documentos
-
-> *Figura 13 — Gestão de Documentos*
-
-`Imagem ainda não disponível.`
-
----
-
-### Fluxo de Assinatura Gov.br
-
-> *Figura 14 — Fluxo de Assinatura Gov.br*
-
-`Imagem ainda não disponível.`
-
----
-
-### Auditoria e Logs
-
-> *Figura 15 — Logs de Auditoria*
-
-`Imagem ainda não disponível.`
-
----
-
 ## 12. Aplicação
 
 **Link do repositório GitHub:** [https://github.com/N4rdelli/dpsn-gestao-documentos-nauticos/tree/main](https://github.com/N4rdelli/dpsn-gestao-documentos-nauticos/tree/main)
@@ -661,12 +612,12 @@ O dashboard apresenta indicadores gerenciais, estatísticas e acesso rápido aos
 | Gestão de embarcações | `✅ Implementado` |
 | Gestão de clientes | `✅ Implementado` |
 | Registro de documentos | `✅ Implementado` |
-| Geração automática de PDF | `⏳ Pendente` |
+| Geração automática de PDF | `✅ Implementado` |
 | Integração Gov.br (assinatura) | `⏳ Pendente` |
 | Dashboard e gráficos | `✅ Implementado` |
 | Exportação de relatórios | `✅ Implementado` |
 | Análise com IA | `⏳ Pendente` |
-| Logs de auditoria | `🔄 Em andamento` |
+| Logs de auditoria | `✅ Implementado` |
 
 ### 12.2 Prints da Aplicação
 
