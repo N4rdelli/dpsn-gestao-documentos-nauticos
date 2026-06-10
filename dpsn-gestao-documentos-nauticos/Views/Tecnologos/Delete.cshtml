@@ -37,7 +37,7 @@
     </dl>
 </div>
 
-<form asp-action="DeleteConfirmed" method="post" class="flex items-center space-x-3">
+<form asp-action="Delete" method="post" class="flex items-center space-x-3">
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Id" />
     <button type="submit" class="px-5 py-2.5 text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-lg shadow-sm transition-colors flex items-center space-x-2">
