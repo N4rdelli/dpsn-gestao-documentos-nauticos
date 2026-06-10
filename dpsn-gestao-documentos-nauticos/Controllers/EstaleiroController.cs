@@ -30,26 +30,47 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
             return View(estaleiros);
         }
 
-        // GET: Estaleiros/Create
+        // GET: Estaleiro/Create
         public async Task<IActionResult> Create()
         {
-            // A View Create agora só precisa do formulário (EstaleiroViewModel).
-            // Se ela não renderiza mais uma tabela abaixo do formulário, mande a ViewModel vazia:
-            return View(new EstaleiroViewModel());
+            var model = new EstaleiroViewModel();
+
+            // Se quem está logado for Admin, precisamos listar os tecnólogos para o Dropdown
+            if (User.IsInRole("Admin"))
+            {
+                var tecnologos = await _context.Tecnologos.Find(u => true).ToListAsync();
+                ViewBag.Tecnologos = tecnologos;
+            }
+
+            return View(model);
         }
 
-        // POST: Estaleiros/Create
+        // POST: Estaleiro/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        // O método Create recebe um objeto do tipo CreateEstaleiro, que é um ViewModel com as informções do estaleiro e de endereço.
         public async Task<IActionResult> Create(EstaleiroViewModel model)
         {
+            var usuarioLogado = await _userManager.GetUserAsync(User);
+
+            if (User.IsInRole("Tecnologo"))
+            {
+                // Força o ID do tecnólogo logado automaticamente e remove o campo do estado de validação
+                model.TecnologoId = usuarioLogado.Id;
+                ModelState.Remove("TecnologoId");
+            }
+
             if (ModelState.IsValid)
             {
-                try
+                var novoEstaleiro = new Estaleiro
                 {
-                    // Instancia o objeto Endereco 
-                    var endereco = new Endereco
+                    UserName = model.Email,
+                    Email = model.Email,
+                    NomeFantasia = model.NomeFantasia,
+                    RazaoSocial = model.RazaoSocial,
+                    Cnpj = model.Cnpj,
+                    Telefone = model.Telefone,
+                    Senha = model.Senha,
+                    Endereco = new Endereco
                     {
                         Cep = model.Cep,
                         Logradouro = model.Logradouro,
@@ -58,48 +79,29 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
                         Bairro = model.Bairro,
                         Cidade = model.Cidade,
                         Estado = model.Estado
-                    };
+                    },
+                    TecnologoId = model.TecnologoId, // Salva o Id atrelado!
+                    EmailConfirmed = true
+                };
 
-                    // Instancia o objeto Estaleiro preenchendo as propriedades herdadas do Identity
-                    var estaleiro = new Estaleiro
-                    {
-                        UserName = model.Email,
-                        Email = model.Email,
-                        EmailConfirmed = true,
-
-                        // Propiredades do estaleiro
-                        NomeFantasia = model.NomeFantasia,
-                        RazaoSocial = model.RazaoSocial,
-                        Cnpj = model.Cnpj,
-                        Telefone = model.Telefone,
-                        Endereco = endereco
-
-                    };
-
-                    // Cria o usuário no banco. O CreateAsync faz o hash automático da model.Senha
-                    var resultadoCriacao = await _userManager.CreateAsync(estaleiro, model.Senha ?? "");
-                    if (resultadoCriacao.Succeeded)
-                    {
-                        await _userManager.AddToRoleAsync(estaleiro, "Estaleiro");
-                        Console.WriteLine($"Estaleiro criado com sucesso: {estaleiro.NomeFantasia}");
-                        TempData["MensagemSucesso"] = "Estaleiro criado com sucesso!";
-                        return RedirectToAction(nameof(Index));
-                    }
-
-                    // Se o Identity recusar a criação 
-                    // repassa os erros do Identity para o ModelState aparecer na tela para o usuário
-                    foreach (var erro in resultadoCriacao.Errors)
-                    {
-                        ModelState.AddModelError(string.Empty, erro.Description);
-                    }
-
-                    TempData["MensagemErro"] = "Não foi possível criar o estaleiro. Verifique os alertas abaixo.";
-                }
-                catch (Exception ex)
+                var result = await _userManager.CreateAsync(novoEstaleiro, model.Senha);
+                if (result.Succeeded)
                 {
-                    TempData["MensagemErro"] = "Ocorreu um erro inesperado ao criar o estaleiro.";
-                    Console.WriteLine(ex.Message);
+                    await _userManager.AddToRoleAsync(novoEstaleiro, "Estaleiro");
+                    TempData["MensagemSucesso"] = "Estaleiro cadastrado com sucesso!";
+                    return RedirectToAction(nameof(Index));
                 }
+
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+            }
+
+            // Se falhar e for admin, recarrega a ViewBag
+            if (User.IsInRole("Admin"))
+            {
+                ViewBag.Tecnologos = await _context.Tecnologos.Find(u => true).ToListAsync();
             }
 
             return View(model);
@@ -130,7 +132,6 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
                 Telefone = estaleiro.Telefone,
 
             };
-
 
             // Se o estaleiro já tiver um endereço salvo, joga os dados dele para a ViewModel também
             if (estaleiro.Endereco != null)

@@ -31,10 +31,8 @@ builder.Services.AddSingleton<IMongoClient>(sp => {
 
 builder.Services.AddScoped<MongoDbContext>();
 
-
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-
 
 // Configuração do Identity
 var mongoSettings = builder.Configuration.GetSection("MongoDbSettings")
@@ -50,8 +48,9 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>
     })
     .AddMongoDbStores<ApplicationUser, ApplicationRole, string>(
         mongoSettings.ConnectionString, mongoSettings.DatabaseName)
-        .AddDefaultTokenProviders(); 
+        .AddDefaultTokenProviders();
 builder.Services.AddRazorPages();
+
 // Configuração de cookies para manter o usuario logado
 builder.Services.ConfigureApplicationCookie(options =>
 {
@@ -64,18 +63,20 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 //configuração envio de email
-// Pega os valores no appsettings.json
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddSingleton<EmailService>();
 
 var app = builder.Build();
 
-// Bloco de teste de conexão opcional (pinga o banco pra ver se deu certo)
+// Inicialização e seeds
 using (var scope = app.Services.CreateScope())
 {
-    var client = scope.ServiceProvider.GetRequiredService<IMongoClient>();
+    var services = scope.ServiceProvider;
+
+    // 1. Teste de conexão (Ping)
     try
     {
+        var client = services.GetRequiredService<IMongoClient>();
         client.GetDatabase("admin").RunCommand<BsonDocument>(new BsonDocument("ping", 1));
         Console.WriteLine("Conexão com MongoDB Atlas estabelecida com sucesso!");
     }
@@ -83,28 +84,30 @@ using (var scope = app.Services.CreateScope())
     {
         Console.WriteLine($"Erro ao conectar no MongoDB: {ex.Message}");
     }
-}
 
-
-// Seeds
-using (var Scope = app.Services.CreateScope())
-{
-    var services = Scope.ServiceProvider;
+    // 2. Execução das Sementes do Sistema
     try
     {
-        await IdentitySeeds.SeedRolesAndUser(services, "Admin@123");
+        string senhaPadrao = "Admin@123";
 
+        // Cria as Roles e o Admin inicial
+        await IdentitySeeds.SeedRolesAndUser(services, senhaPadrao);
+
+        // NOVA LINHA: Carrega o Tecnólogo Helcio, os Estaleiros, Embarcações e Documentos
+        await IdentitySeeds.SeedAppData(services, senhaPadrao);
+
+        Console.WriteLine("Seeds executadas com sucesso!");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Erro Seed: {ex.Message}");
+        Console.WriteLine($"Erro ao executar as Seeds: {ex.Message}");
     }
 }
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -119,12 +122,7 @@ app.MapStaticAssets();
 app.MapControllers();
 app.MapControllerRoute(
     name: "default",
-    // A primeira página a ser carregada é a de login
     pattern: "{controller=Accounts}/{action=Login}/{id?}")
     .WithStaticAssets();
-    // Garante que o usuario esteja autenticado para acessar as rotas do controller
-    //.RequireAuthorization();
-    // ↑ Descomentei a linha para permitir que acessemos "ResetPassword" antes de logar (ou qualquer outro controller)
-
 
 app.Run();

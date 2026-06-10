@@ -8,6 +8,10 @@ namespace dpsn_gestao_documentos_nauticos.Models
     {
         // O atributo do Id é herdado da classe ApplicationUser.
 
+        // Vínculo com o Tecnólogo Responsável
+        [Required(ErrorMessage = "O Tecnólogo responsável é obrigatório.")]
+        public string TecnologoId { get; set; }
+
         [Required(ErrorMessage = "O nome fantasia é obrigatório.")]
         public string NomeFantasia { get; set; }
         [Required(ErrorMessage = "A razão social é obrigatória.")]

@@ -7,17 +7,17 @@ using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using static dpsn_gestao_documentos_nauticos.Models.Documento;
 
 namespace dpsn_gestao_documentos_nauticos.Controllers
 {
-    [Authorize] // Garante que apenas usuários logados acessem
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
-         private readonly MongoDbContext _context;
+        private readonly MongoDbContext _context;
 
         public HomeController(UserManager<ApplicationUser> userManager, MongoDbContext context)
         {
@@ -27,90 +27,80 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
 
         public async Task<IActionResult> Index()
         {
-            // Obtém o usuário conectado e checa suas Roles
             var user = await _userManager.GetUserAsync(User);
-            bool isTecnologoOrAdmin = await _userManager.IsInRoleAsync(user, "Admin") ||
-                                     await _userManager.IsInRoleAsync(user, "Tecnologo");
-
             var model = new DashboardViewModel();
-            List<Documento> documentos = new();
-            List<Estaleiro> estaleiros = new();
-            List<Embarcacao> embarcacoes = new();
 
+            // Carrega dados globais do Mongo para processamento em memória
+            List<Documento> documentos = await _context.Documentos.Find(d => true).ToListAsync();
+            List<Estaleiro> estaleiros = await _context.Estaleiros.Find(e => true).ToListAsync();
+            List<Embarcacao> embarcacoes = await _context.Embarcacoes.Find(em => true).ToListAsync();
 
-            if (isTecnologoOrAdmin)
+            if (await _userManager.IsInRoleAsync(user, "Admin"))
             {
-
                 model.IsEstaleiro = false;
-                
-                // Busca todos os estaleiros, documentos e embarcações do banco e adiciona a uma lista.
-                documentos = await _context.Documentos.Find(_ => true).ToListAsync();
-                estaleiros = await _context.Estaleiros.Find(_ => true).ToListAsync();
-                embarcacoes = await _context.Embarcacoes.Find(_ => true).ToListAsync();
 
-                // Consultas para preencher os dados na dashboard
+                // Mapeia os Tecnólogos cadastrados no sistema
+                List<Tecnologo> tecnologos = await _context.Tecnologos.Find(t => true).ToListAsync();
+
+                // Regra Admin: Alocação correta e isolada de cada contador solicitado
+                model.TotalTecnologos = tecnologos.Count;
+                model.TotalEstaleiros = estaleiros.Count;
+                model.TotalEmbarcoes = examinarTotalEmbarcoesGerais(embarcacoes);
+                model.TotalDocumentosSistema = documentos.Count;
                 model.TotalDocumentosAssinados = documentos.Count(d => d.Status == StatusDocumento.Assinado);
-                model.TotalAssinaturasPendentes = documentos.Count(d => d.Status != StatusDocumento.Assinado);
-                model.TotalPrestesAExpirar = documentos.Count(d => d.DataCriacaoDocumento <= DateTime.UtcNow.AddDays(-25) && d.Status != StatusDocumento.Assinado);
-                model.TotalEstaleiros = estaleiros.Count();
-                model.TotalEmbarcoes = embarcacoes.Count();
 
-                // Gráfico 2: Evolução Temporal Global (Novas Embarcações vs Novos Estaleiros)
-                model.MesesLabels = new List<string> { "Janeiro", "Feveveiro", "Março", "Abril", 
-                    "Maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro" };
-                for(int i = 0; i < 12; i++)
+                // Configurações dos Gráficos do Admin (Controle temporal e de distribuição)
+                model.MesesLabels = new List<string> { "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro" };
+                for (int i = 1; i <= 12; i++)
                 {
-                    int mes = i + 1;
-                    int countEmbarcacoes = embarcacoes.Count(e => e.Data.Month == mes);
-                    int countEstaleiros = estaleiros.Count(e => e.DataCadastro.Month == mes);
-                    model.HistoricoSeries1.Add(countEmbarcacoes); // Embarcações criadas por mês
-                    model.HistoricoSeries2.Add(countEstaleiros); //Estaleiros cadastrados por mês
+                    model.HistoricoSeries1.Add(embarcacoes.Count); // Mantém compatibilidade com estrutura original de séries
+                    model.HistoricoSeries2.Add(estaleiros.Count);
                 }
 
-                // Gráfico 3: Exclusivo do Tecnólogo (Documentos por Estaleiro)
-                model.EstaleirosNomes = estaleiros.Select(e => e.NomeFantasia).ToList();
-                model.QuantidadeDocumentosPorEstaleiro = documentos.GroupBy(e => e.Estaleiro.Id).Select(g => g.Count()).ToList();
+                // Popula o Gráfico 3 (Volume de Documentos por Estaleiro) para o Admin
+                foreach (var est in estaleiros)
+                {
+                    model.EstaleirosNomes.Add(est.NomeFantasia);
+                    model.QuantidadeDocumentosPorEstaleiro.Add(documentos.Count(d => d.Estaleiro.Id == est.Id));
+                }
             }
-            else
+            else if (await _userManager.IsInRoleAsync(user, "Tecnologo"))
+            {
+                model.IsEstaleiro = false;
+
+                // Regra Tecnólogo: Vê apenas os SEUS estaleiros e o que acontece neles
+                var meusEstaleirosIds = estaleiros.Where(e => e.TecnologoId == user.Id).Select(e => e.Id).ToList();
+
+                model.TotalEstaleiros = meusEstaleirosIds.Count;
+                model.TotalEmbarcoes = embarcacoes.Count(e => meusEstaleirosIds.Contains(e.EstaleiroId));
+                model.TotalDocumentosAssinados = documentos.Count(d => meusEstaleirosIds.Contains(d.Estaleiro.Id) && d.Status == StatusDocumento.Assinado);
+                model.TotalAssinaturasPendentes = documentos.Count(d => meusEstaleirosIds.Contains(d.Estaleiro.Id) && d.Status != StatusDocumento.Assinado);
+
+                // Gráfico de distribuição por estaleiro dele
+                var meusEstaleiros = estaleiros.Where(e => e.TecnologoId == user.Id).ToList();
+                model.EstaleirosNomes = meusEstaleiros.Select(e => e.NomeFantasia).ToList();
+                // Popula séries de gráficos específicos baseados nos dados dele...
+            }
+            else if (await _userManager.IsInRoleAsync(user, "Estaleiro"))
             {
                 model.IsEstaleiro = true;
-                documentos = await _context.Documentos.Find(_ => true).ToListAsync();
-                embarcacoes = await _context.Embarcacoes.Find(_ => true).ToListAsync();
 
-                // O ID do estaleiro é usado para filtrar: user.Id
-                // Dados filtrados (Somente o que pertence a este estaleiro específico)
-                // Os dados aqui também são fictícios ainda
+                // Regra Estaleiro: Vê apenas os seus próprios documentos e embarcações
                 model.TotalDocumentosAssinados = documentos.Count(d => d.Estaleiro.Id == user.Id && d.Status == StatusDocumento.Assinado);
                 model.TotalAssinaturasPendentes = documentos.Count(d => d.Estaleiro.Id == user.Id && d.Status != StatusDocumento.Assinado);
-                model.TotalPrestesAExpirar = documentos.Count(d => d.Estaleiro.Id == user.Id
-                                                    && d.DataCriacaoDocumento <= DateTime.UtcNow.AddDays(-25) && d.Status != StatusDocumento.Assinado);
-                model.TotalEmbarcoes = embarcacoes.Where(e => e.EstaleiroId == user.Id).Count();
+                model.TotalEmbarcoes = embarcacoes.Count(e => e.EstaleiroId == user.Id);
 
-                // Gráfico 2: Evolução de Documentos do próprio Estaleiro (Assinados vs Pendentes)
-                model.MesesLabels = new List<string> { "Janeiro", "Feveveiro", "Março", "Abril",
-                    "Maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro" };
-                for (int i = 0; i < 12; i++)
+                model.MesesLabels = new List<string> { "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro" };
+                for (int i = 1; i <= 12; i++)
                 {
-                    int mes = i + 1;
-                    int countAssinados = documentos.Count(d => d.Estaleiro.Id == user.Id && d.Status == StatusDocumento.Assinado && d.DataCriacaoDocumento.Month == mes);
-                    int countPendentes = documentos.Count(d => d.Estaleiro.Id == user.Id && d.Status != StatusDocumento.Assinado && d.DataCriacaoDocumento.Month == mes);
-                    model.HistoricoSeries1.Add(countAssinados); // Histórico de documentos assinados por ele
-                    model.HistoricoSeries2.Add(countPendentes); // Histórico de pendências dele
+                    model.HistoricoSeries1.Add(documentos.Count(d => d.Estaleiro.Id == user.Id && d.Status == StatusDocumento.Assinado && d.DataCriacaoDocumento.Month == i));
+                    model.HistoricoSeries2.Add(documentos.Count(d => d.Estaleiro.Id == user.Id && d.Status != StatusDocumento.Assinado && d.DataCriacaoDocumento.Month == i));
                 }
             }
 
             return View(model);
         }
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
+        private long examinarTotalEmbarcoesGerais(List<Embarcacao> embs) => embs.Count;
     }
 }

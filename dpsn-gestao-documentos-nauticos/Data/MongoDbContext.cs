@@ -46,6 +46,14 @@ namespace dpsn_gestao_documentos_nauticos.Data
                 return _database.GetCollection<Documento>("documentos");
             }
         }
+        public IMongoCollection<Tecnologo> Tecnologos
+        {
+            get
+            {
+                var userCollection = _database.GetCollection<ApplicationUser>("Users");
+                return userCollection.OfType<Tecnologo>();
+            }
+        }
 
     }
 }
