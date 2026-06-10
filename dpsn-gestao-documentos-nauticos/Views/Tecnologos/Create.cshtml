@@ -1,0 +1,75 @@
+﻿@model IEnumerable<dpsn_gestao_documentos_nauticos.Models.Tecnologo>
+
+@{
+    ViewData["Title"] = "Gestão de Tecnólogos";
+}
+
+<div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Tecnólogos de Iniciação e Desenvolvimento</h1>
+        <p class="text-sm text-slate-500 mt-1">Gerencie o corpo técnico e os perfis de monitoria responsáveis pela validação documental.</p>
+    </div>
+    <div>
+        <a asp-action="CreateTecnologo" class="inline-flex items-center space-x-2 px-4 py-2.5 text-sm font-medium text-white bg-sky-700 hover:bg-sky-800 rounded-lg shadow-sm transition-all">
+            <i class="fa-solid fa-user-plus text-xs"></i>
+            <span>Novo Tecnólogo</span>
+        </a>
+    </div>
+</div>
+
+@if (TempData["MensagemSucesso"] != null)
+{
+    <div class="mb-6 p-4 bg-emerald-50 border-l-4 border-emerald-500 rounded-r-lg text-emerald-700 flex items-start space-x-2 shadow-sm">
+        <i class="fa-regular fa-circle-check mt-0.5 text-emerald-500"></i>
+        <div><span class="font-semibold">Sucesso:</span> @TempData["MensagemSucesso"]</div>
+    </div>
+}
+
+<div class="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-sm">
+            <thead>
+                <tr class="bg-slate-50/75 border-b border-slate-100 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    <th class="px-6 py-4">Nome Completo</th>
+                    <th class="px-6 py-4">E-mail / Usuário</th>
+                    <th class="px-6 py-4">CPF</th>
+                    <th class="px-6 py-4">Data de Cadastro</th>
+                    <th class="px-6 py-4 text-right">Ações</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-slate-600">
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="5" class="px-6 py-10 text-center text-slate-400">
+                            <i class="fa-solid fa-users-slash text-2xl mb-2 block"></i>
+                            Nenhum tecnólogo cadastrado no ecossistema.
+                        </td>
+                    </tr>
+                }
+                @foreach (var item in Model)
+                {
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">@item.NomeCompleto</td>
+                        <td class="px-6 py-4">@item.Email</td>
+                        <td class="px-6 py-4 font-mono text-xs">@item.Cpf</td>
+                        <td class="px-6 py-4 text-xs">@item.DataCadastro.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                            <div class="inline-flex items-center space-x-1.5">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="p-1.5 text-slate-400 hover:text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-md transition-colors" title="Ver Detalhes">
+                                    <i class="fa-regular fa-eye text-sm"></i>
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="p-1.5 text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors" title="Editar">
+                                    <i class="fa-regular fa-pen-to-square text-sm"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="p-1.5 text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-md transition-colors" title="Excluir">
+                                    <i class="fa-regular fa-trash-can text-sm"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

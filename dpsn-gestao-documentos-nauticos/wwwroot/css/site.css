@@ -78,6 +78,8 @@
     --text-xl--line-height: calc(1.75 / 1.25);
     --text-2xl: 1.5rem;
     --text-2xl--line-height: calc(2 / 1.5);
+    --text-3xl: 1.875rem;
+    --text-3xl--line-height: calc(2.25 / 1.875);
     --font-weight-light: 300;
     --font-weight-normal: 400;
     --font-weight-medium: 500;
@@ -720,6 +722,9 @@
   .min-h-\[80px\] {
     min-height: 80px;
   }
+  .min-h-\[140px\] {
+    min-height: 140px;
+  }
   .min-h-\[150px\] {
     min-height: 150px;
   }
@@ -1233,6 +1238,9 @@
   .border-rose-500 {
     border-color: var(--color-rose-500);
   }
+  .border-sky-100 {
+    border-color: var(--color-sky-100);
+  }
   .border-slate-100 {
     border-color: var(--color-slate-100);
   }
@@ -1608,6 +1616,10 @@
   .text-2xl {
     font-size: var(--text-2xl);
     line-height: var(--tw-leading, var(--text-2xl--line-height));
+  }
+  .text-3xl {
+    font-size: var(--text-3xl);
+    line-height: var(--tw-leading, var(--text-3xl--line-height));
   }
   .text-base {
     font-size: var(--text-base);
@@ -2544,6 +2556,11 @@
   .lg\:grid-cols-4 {
     @media (width >= 64rem) {
       grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+  .xl\:grid-cols-5 {
+    @media (width >= 80rem) {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
     }
   }
 }

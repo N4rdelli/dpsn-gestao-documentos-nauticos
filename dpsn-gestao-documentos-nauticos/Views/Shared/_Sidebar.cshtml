@@ -1,6 +1,30 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @inject SignInManager<ApplicationUser> SignInManager
 
+@{
+    // Obtém o nome do controller atual para aplicar o destaque dinâmico
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+
+    // Funções auxiliares para definir as classes CSS de item ativo vs inativo
+    string GetLinkClass(string controllerName)
+    {
+        bool isActive = currentController.Equals(controllerName, StringComparison.OrdinalIgnoreCase);
+
+        return isActive
+            ? "flex items-center gap-3.5 px-3 py-3 rounded-md text-white bg-sky-800 transition-colors group relative font-medium text-sm"
+            : "flex items-center gap-3.5 px-3 py-3 rounded-md text-slate-300 hover:bg-slate-700/50 hover:text-white transition-colors group text-sm font-normal";
+    }
+
+    string GetIconClass(string controllerName)
+    {
+        bool isActive = currentController.Equals(controllerName, StringComparison.OrdinalIgnoreCase);
+
+        return isActive
+            ? "w-5 flex justify-center text-base min-w-[20px] text-white"
+            : "w-5 flex justify-center text-base min-w-[20px] text-slate-400 group-hover:text-slate-200";
+    }
+}
+
 <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/40 z-40 hidden md:hidden transition-opacity duration-300 opacity-0"></div>
 
 <aside id="sidebar" class="fixed inset-y-0 left-0 md:sticky md:top-0 z-50 flex flex-col h-full bg-slate-800 text-white transition-all duration-300 ease-in-out
@@ -25,59 +49,60 @@
             Navegação
         </span>
 
-        <a href="@Url.Action("Index", "Home")"
-           class="flex items-center gap-3.5 px-3 py-3 rounded-md text-white bg-sky-800 transition-colors group relative font-medium text-sm">
-            <div class="w-5 flex justify-center text-base min-w-[20px]">
+        @* 1. DASHBOARD (Disponível para todos os perfis) *@
+        <a href="@Url.Action("Index", "Home")" class="@GetLinkClass("Home")">
+            <div class="@GetIconClass("Home")">
                 <i class="fa-solid fa-table-columns"></i>
             </div>
             <span class="sidebar-text transition-opacity duration-200 overflow-hidden whitespace-nowrap">Painel de Controle</span>
         </a>
 
-        <a href="@Url.Action("Index", "Documento")"
-           class="flex items-center gap-3.5 px-3 py-3 rounded-md text-slate-300 hover:bg-slate-700/50 hover:text-white transition-colors group text-sm font-normal">
-            <div class="w-5 flex justify-center text-base min-w-[20px] text-slate-400 group-hover:text-slate-200">
-                <i class="fa-regular fa-file-lines"></i>
-            </div>
-            <span class="sidebar-text transition-opacity duration-200 overflow-hidden whitespace-nowrap">Documentos</span>
-        </a>
-
-        @if (!User.IsInRole("Estaleiro"))
+        @* 2. TECNÓLOGOS (Exclusivo para Admin) *@
+        @if (User.IsInRole("Admin"))
         {
-            <a href="@Url.Action("Index", "Estaleiro")"
-            class="flex items-center gap-3.5 px-3 py-3 rounded-md text-slate-300 hover:bg-slate-700/50 hover:text-white transition-colors group text-sm font-normal">
-                <div class="w-5 flex justify-center text-base min-w-[20px] text-slate-400 group-hover:text-slate-200">
+            <a href="@Url.Action("Index", "Tecnologos")" class="@GetLinkClass("Tecnologos")">
+                <div class="@GetIconClass("Tecnologos")">
+                    <i class="fa-solid fa-user-gear"></i>
+                </div>
+                <span class="sidebar-text transition-opacity duration-200 overflow-hidden whitespace-nowrap">Tecnólogos</span>
+            </a>
+        }
+
+        @* 3. ESTALEIROS (Disponível para Admin e Tecnologo) *@
+        @if (User.IsInRole("Admin") || User.IsInRole("Tecnologo"))
+        {
+            <a href="@Url.Action("Index", "Estaleiro")" class="@GetLinkClass("Estaleiro")">
+                <div class="@GetIconClass("Estaleiro")">
                     <i class="fa-solid fa-warehouse"></i>
                 </div>
                 <span class="sidebar-text transition-opacity duration-200 overflow-hidden whitespace-nowrap">Estaleiros</span>
             </a>
         }
 
-        <a href="@Url.Action("Index", "Embarcacoes")"
-           class="flex items-center gap-3.5 px-3 py-3 rounded-md text-slate-300 hover:bg-slate-700/50 hover:text-white transition-colors group text-sm font-normal">
-            <div class="w-5 flex justify-center text-base min-w-[20px] text-slate-400 group-hover:text-slate-200">
+        @* 4. EMBARCAÇÕES (Disponível para todos os perfis) *@
+        <a href="@Url.Action("Index", "Embarcacoes")" class="@GetLinkClass("Embarcacoes")">
+            <div class="@GetIconClass("Embarcacoes")">
                 <i class="fa-solid fa-anchor"></i>
             </div>
             <span class="sidebar-text transition-opacity duration-200 overflow-hidden whitespace-nowrap">Embarcações</span>
         </a>
 
-        @* @if (!User.IsInRole("Estaleiro"))
-        {
-            <a href="@Url.Action("Index", "Audits")"
-               class="flex items-center gap-3.5 px-3 py-3 rounded-md text-slate-300 hover:bg-slate-700/50 hover:text-white transition-colors group text-sm font-normal">
-                <div class="w-5 flex justify-center text-base min-w-[20px] text-slate-400 group-hover:text-slate-200">
-                    <i class="fa-solid fa-clipboard-check"></i>
-                </div>
-                <span class="sidebar-text transition-opacity duration-200 overflow-hidden whitespace-nowrap">Auditorias & Logs</span>
-            </a>
-        } *@
+        @* 5. DOCUMENTOS (Disponível para todos os perfis) *@
+        <a href="@Url.Action("Index", "Documento")" class="@GetLinkClass("Documento")">
+            <div class="@GetIconClass("Documento")">
+                <i class="fa-regular fa-file-lines"></i>
+            </div>
+            <span class="sidebar-text transition-opacity duration-200 overflow-hidden whitespace-nowrap">Documentos</span>
+        </a>
 
-        <a href="@Url.Action("Settings", "Home")"
-           class="flex items-center gap-3.5 px-3 py-3 rounded-md text-slate-300 hover:bg-slate-700/50 hover:text-white transition-colors group text-sm font-normal">
-            <div class="w-5 flex justify-center text-base min-w-[20px] text-slate-400 group-hover:text-slate-200">
+        @* COMENTADO: Seção de Configurações temporariamente removida por não estar implementada *@
+        @* <a href="@Url.Action("Settings", "Home")"
+           class="@GetLinkClass("Settings")">
+            <div class="@GetIconClass("Settings")">
                 <i class="fa-solid fa-sliders"></i>
             </div>
             <span class="sidebar-text transition-opacity duration-200 overflow-hidden whitespace-nowrap">Configurações</span>
-        </a>
+        </a> *@
     </nav>
 
     @if (SignInManager.IsSignedIn(User))
@@ -97,12 +122,10 @@
                             }
                             else if (User.IsInRole("Tecnologo"))
                             {
-
                                 <text>Tecnólogo Naval</text>
                             }
                             else if (User.IsInRole("Estaleiro"))
                             {
-
                                 <text>Usuário Estaleiro</text>
                             }
                         </span>

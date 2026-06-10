@@ -8,6 +8,10 @@ namespace dpsn_gestao_documentos_nauticos.ViewModel
         [BsonId]
         [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
         public string? Id { get; set; }
+
+        [Required(ErrorMessage = "O Tecnólogo responsável é obrigatório.")]
+        public string TecnologoId { get; set; }
+
         // Dados do estaleiro
         [Required(ErrorMessage = "O nome fantasia é obrigatório.")]
         public string NomeFantasia { get; set; }

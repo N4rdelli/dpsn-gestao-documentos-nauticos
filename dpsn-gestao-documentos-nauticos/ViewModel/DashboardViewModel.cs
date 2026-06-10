@@ -13,6 +13,8 @@ namespace dpsn_gestao_documentos_nauticos.ViewModel
         public long TotalPrestesAExpirar { get; set; }
         public long TotalEstaleiros { get; set; } // Ocultado ou alterado se for Estaleiro
         public long TotalEmbarcoes { get; set; }
+        public long TotalTecnologos { get; set; }
+        public long TotalDocumentosSistema { get; set; }
 
         // Gráfico 1: Status de Documentos (Geral ou filtrado pelo Estaleiro)
         // Usa os contadores acima diretamente no JS

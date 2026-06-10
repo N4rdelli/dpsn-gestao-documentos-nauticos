@@ -24,7 +24,30 @@
 
 <form asp-action="Create" method="post" class="space-y-6">
     @Html.AntiForgeryToken()
-
+    @if (User.IsInRole("Admin"))
+    {
+        <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 shadow-sm mb-6">
+            <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider border-b border-slate-200 pb-3 mb-5">
+                <i class="fa-solid fa-user-shield text-sky-700 mr-1"></i> Atribuição de Responsável técnica
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                    <label asp-for="TecnologoId" class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1 block">Tecnólogo Responsável</label>
+                    <select asp-for="TecnologoId" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-sky-500/20 bg-white" required>
+                        <option value="">-- Selecione o Tecnólogo que gerenciará este Estaleiro --</option>
+                        @if (ViewBag.Tecnologos != null)
+                        {
+                            foreach (var tec in ViewBag.Tecnologos)
+                            {
+                                <option value="@tec.Id">@tec.NomeCompleto (@tec.Email)</option>
+                            }
+                        }
+                    </select>
+                    <span asp-validation-for="TecnologoId" class="text-xs text-red-500 mt-1 block font-medium"></span>
+                </div>
+            </div>
+        </div>
+    }
     <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
         <div class="border-b border-slate-100 pb-4 mb-5 flex items-center space-x-2">
             <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
