@@ -88,7 +88,7 @@ namespace dpsn_gestao_documentos_nauticos.Controllers
                     Lastro = emb.Lastro,
                     AreaNavegacaoTipoServico = emb.AreaNavegacaoTipoServico,
                     MotorizacaoMax = emb.MotorizacaoMax,
-                    MotorizacaoMin = (int)emb.MotorizacaoMin,
+                    MotorizacaoMin = emb.MotorizacaoMin.HasValue ? (int)emb.MotorizacaoMin.Value : 0,
                     Tripulantes = emb.Tripulantes,
                     Passageiros = emb.Passageiros,
 
