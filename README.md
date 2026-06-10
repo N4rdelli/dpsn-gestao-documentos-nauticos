@@ -240,7 +240,7 @@
 > *Figura 5 — Diagrama MoLIC*
 > `Imagem ainda não disponível.`
 
-> Descreva brevemente os principais fluxos de interação representados no diagrama. Ex: fluxo de cadastro de estaleiro, fluxo de solicitação de documento, fluxo de assinatura digital...
+
 
 ---
 
