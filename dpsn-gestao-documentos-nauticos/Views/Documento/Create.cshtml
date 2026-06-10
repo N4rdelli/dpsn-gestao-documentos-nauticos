@@ -1,109 +1,143 @@
 ﻿@model dpsn_gestao_documentos_nauticos.ViewModel.DocumentoViewModel
 
-<h2>Criar Documento</h2>
+@{
+    ViewData["Title"] = "Emitir Minuta Documental";
+    var isAdminOuTecnologo = User.IsInRole("Admin") || User.IsInRole("Tecnologo");
+}
 
-<form action="/Documento/Create" method="post">
+<div class="mb-8">
+    <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Registrar Novo Documento</h1>
+    <p class="text-sm text-slate-500 mt-1">Gere uma nova minuta de segurança naval preenchendo as informações do armador e associando ao estaleiro.</p>
+</div>
+
+<form asp-action="Create" method="post" class="space-y-6">
     @Html.AntiForgeryToken()
 
     @if (!ViewData.ModelState.IsValid)
     {
-        <div style="color: red;">
+        <div class="p-4 bg-rose-50 border-l-4 border-rose-500 rounded-r-xl text-sm text-rose-800 font-medium shadow-sm">
             @Html.ValidationSummary(false)
         </div>
     }
 
-    @if (User.IsInRole("Tecnologo") || User.IsInRole("Admin"))
-    {
-        <div>
-            <label>Selecione o Estaleiro Parceiro:</label>
-            <select name="EstaleiroId" id="ddlEstaleiro" required>
-                <option value="">-- Selecione um Estaleiro --</option>
-                @if (Model.Estaleiros != null)
-                {
-                    foreach (var estaleiro in Model.Estaleiros)
-                    {
-                        <option value="@estaleiro.Id">@estaleiro.NomeFantasia</option>
-                    }
-                }
-            </select>
-        </div>
-    }
-    else
-    {
-        <input type="hidden" name="EstaleiroId" value="@Model.EstaleiroId" id="ddlEstaleiro" />
-    }
-
-    <div style="margin-top: 10px;">
-        <label>Selecione a Embarcação:</label>
-        <select name="EmbarcacaoId" id="ddlEmbarcacao" required>
-            <option value="">-- Selecione primeiro o estaleiro --</option>
-            @if (User.IsInRole("Estaleiro") && Model.Embarcacoes != null)
+    <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+        <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-3 mb-5">
+            <i class="fa-solid fa-circle-info text-slate-400 mr-1"></i> Seção 1: Vínculos e Identificação
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            @if (isAdminOuTecnologo)
             {
-                foreach (var emb in Model.Embarcacoes)
-                {
-                    <option value="@emb.IdEmbarcacao">@emb.Nome</option>
-                }
+                <div>
+                    <label class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1 block">Estaleiro Parceiro</label>
+                    <select name="EstaleiroId" id="ddlEstaleiro" required class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500/20 bg-white">
+                        <option value="">-- Selecione o Estaleiro --</option>
+                        @if (Model.Estaleiros != null)
+                        {
+                            foreach (var estaleiro in Model.Estaleiros)
+                            {
+                                <option value="@estaleiro.Id">@estaleiro.NomeFantasia</option>
+                            }
+                        }
+                    </select>
+                </div>
             }
-        </select>
+            else
+            {
+                <input type="hidden" name="EstaleiroId" value="@Model.EstaleiroId" id="ddlEstaleiro" />
+            }
+
+            <div>
+                <label class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1 block">Embarcação Alvo</label>
+                <select name="EmbarcacaoId" id="ddlEmbarcacao" required class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500/20 bg-white">
+                    <option value="">-- Selecione primeiro o estaleiro --</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1 block">Número de Inscrição</label>
+                <input type="text" name="NumeroInscricao" value="@Model.NumeroInscricao" placeholder="A ser inscrita ou número oficial" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm font-mono focus:ring-2 focus:ring-blue-500/20" />
+            </div>
+        </div>
     </div>
 
-    <hr />
-    <h3>Dados do Cliente (Armador)</h3>
-
-    <div>
-        <label>Nome do Armador:</label>
-        <input type="text" name="Nome" value="@Model.Nome" required />
-    </div>
-    <div>
-        <label>CPF/CNPJ:</label>
-        <input type="text" name="Cpf_cnpj" value="@Model.Cpf_cnpj" required />
-    </div>
-    <div>
-        <label>Ano Construção:</label>
-        <input type="text" name="Ano_contrucao" value="@Model.Ano_contrucao" required />
-    </div>
-    <div>
-        <label>Número do Chassi:</label>
-        <input type="text" name="NumeroChassi" value="@Model.NumeroChassi" required />
-    </div>
-
-    <h4>Endereço do Cliente</h4>
-    <div>
-        <label>CEP:</label>
-        <input type="text" name="Cep" value="@Model.Cep" required />
-    </div>
-    <div>
-        <label>Logradouro:</label>
-        <input type="text" name="Logradouro" value="@Model.Logradouro" required />
-    </div>
-    <div>
-        <label>Número:</label>
-        <input type="text" name="Numero" value="@Model.Numero" required />
-    </div>
-    <div>
-        <label>Complemento:</label>
-        <input type="text" name="Complemento" value="@Model.Complemento" />
-    </div>
-    <div>
-        <label>Bairro:</label>
-        <input type="text" name="Bairro" value="@Model.Bairro" required />
-    </div>
-    <div>
-        <label>Cidade:</label>
-        <input type="text" name="Cidade" value="@Model.Cidade" required />
-    </div>
-    <div>
-        <label>Estado:</label>
-        <input type="text" name="Estado" value="@Model.Estado" required />
-    </div>
-    <div>
-        <label>Número Inscrição:</label>
-        <input type="text" name="NumeroInscricao" value="@Model.NumeroInscricao" />
+    <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+        <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-3 mb-5">
+            <i class="fa-solid fa-user-anchor text-slate-400 mr-1"></i> Seção 2: Dados Próprios do Armador (Cliente)
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+            <div class="md:col-span-2">
+                <label class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1 block">Nome Completo do Proprietário</label>
+                <input asp-for="Nome" placeholder="Nome completo ou Razão Social" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500/20" />
+                <span asp-validation-for="Nome" class="text-xs text-red-500 mt-1 block font-medium"></span>
+            </div>
+            <div>
+                <label class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1 block">CPF / CNPJ</label>
+                <input asp-for="Cpf_cnpj" placeholder="Apenas algarismos" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm font-mono focus:ring-2 focus:ring-blue-500/20" />
+                <span asp-validation-for="Cpf_cnpj" class="text-xs text-red-500 mt-1 block font-medium"></span>
+            </div>
+            <div>
+                <label class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1 block">Ano de Construção</label>
+                <input asp-for="Ano_contrucao" type="number" placeholder="Ex: @DateTime.Now.Year" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm font-mono focus:ring-2 focus:ring-blue-500/20" />
+                <span asp-validation-for="Ano_contrucao" class="text-xs text-red-500 mt-1 block font-medium"></span>
+            </div>
+            <div class="md:col-span-2">
+                <label class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1 block">Código Identificador do Chassi</label>
+                <input asp-for="NumeroChassi" placeholder="Código estrutural ou chassi" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm font-mono focus:ring-2 focus:ring-blue-500/20" />
+                <span asp-validation-for="NumeroChassi" class="text-xs text-red-500 mt-1 block font-medium"></span>
+            </div>
+        </div>
     </div>
 
-    <div style="margin-top: 15px;">
-        <button type="submit">Salvar Documento</button>
-        <a href="/Documento/Index">Voltar</a>
+    <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+        <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-3 mb-5">
+            <i class="fa-solid fa-map-location-dot text-slate-400 mr-1"></i> Seção 3: Endereço do Armador
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+            <div>
+                <label class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1 block">CEP</label>
+                <input asp-for="Cep" placeholder="00000000" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm font-mono focus:ring-2 focus:ring-blue-500/20" />
+                <span asp-validation-for="Cep" class="text-xs text-red-500 mt-1 block font-medium"></span>
+            </div>
+            <div class="md:col-span-2">
+                <label class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1 block">Logradouro</label>
+                <input asp-for="Logradouro" placeholder="Av, Rua, Travessa..." class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500/20" />
+                <span asp-validation-for="Logradouro" class="text-xs text-red-500 mt-1 block font-medium"></span>
+            </div>
+            <div>
+                <label class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1 block">Número</label>
+                <input asp-for="Numero" placeholder="N°" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm font-mono focus:ring-2 focus:ring-blue-500/20" />
+                <span asp-validation-for="Numero" class="text-xs text-red-500 mt-1 block font-medium"></span>
+            </div>
+            <div>
+                <label class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1 block">Bairro</label>
+                <input asp-for="Bairro" placeholder="Bairro" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500/20" />
+                <span asp-validation-for="Bairro" class="text-xs text-red-500 mt-1 block font-medium"></span>
+            </div>
+            <div class="md:col-span-2">
+                <label class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1 block">Cidade / Município</label>
+                <input asp-for="Cidade" placeholder="Cidade de registro" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500/20" />
+                <span asp-validation-for="Cidade" class="text-xs text-red-500 mt-1 block font-medium"></span>
+            </div>
+            <div>
+                <label class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1 block">Estado (UF)</label>
+                <input asp-for="Estado" placeholder="UF" maxlength="2" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm font-mono focus:ring-2 focus:ring-blue-500/20 uppercase" />
+                <span asp-validation-for="Estado" class="text-xs text-red-500 mt-1 block font-medium"></span>
+            </div>
+            <div class="md:col-span-4">
+                <label class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1 block">Complemento / Referência</label>
+                <input asp-for="Complemento" placeholder="Apto, Bloco, Próximo a..." class="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500/20" />
+            </div>
+        </div>
+    </div>
+
+    <div class="flex items-center justify-end space-x-3 pt-2">
+        <a href="/Documento/Index" class="px-5 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
+            Cancelar
+        </a>
+        <button type="submit" class="px-5 py-2.5 text-sm font-semibold text-white bg-sky-700 hover:bg-sky-800 rounded-lg shadow-sm hover:shadow transition-all flex items-center space-x-2">
+            <i class="fa-regular fa-floppy-disk text-xs"></i>
+            <span>Salvar Documento</span>
+        </button>
     </div>
 </form>
 
@@ -111,11 +145,17 @@
     const ddlEstaleiro = document.getElementById("ddlEstaleiro");
     const ddlEmbarcacao = document.getElementById("ddlEmbarcacao");
 
-    if (ddlEstaleiro && ddlEstaleiro.tagName === "SELECT") {
-        ddlEstaleiro.addEventListener("change", function () {
-            const estaleiroId = this.value;
-            atualizarEmbarcacoes(estaleiroId);
-        });
+    if (ddlEstaleiro) {
+        if (ddlEstaleiro.tagName === "SELECT") {
+            ddlEstaleiro.addEventListener("change", function () {
+                atualizarEmbarcacoes(this.value);
+            });
+            if(ddlEstaleiro.value) {
+                atualizarEmbarcacoes(ddlEstaleiro.value);
+            }
+        } else if (ddlEstaleiro.tagName === "INPUT") {
+            atualizarEmbarcacoes(ddlEstaleiro.value);
+        }
     }
 
     function atualizarEmbarcacoes(estaleiroId) {
@@ -129,11 +169,11 @@
             .then(data => {
                 ddlEmbarcacao.innerHTML = '<option value="">-- Selecione uma Embarcação --</option>';
                 data.forEach(emb => {
-                    const option = document.createElement("option");
-                    option.value = emb.idEmbarcacao;
-                    option.text = emb.nome;
-                    ddlEmbarcacao.appendChild(option);
+                    ddlEmbarcacao.innerHTML += `<option value="${emb.idEmbarcacao}">${emb.nome}</option>`;
                 });
+            })
+            .catch(() => {
+                ddlEmbarcacao.innerHTML = '<option value="">Erro ao carregar embarcações</option>';
             });
     }
 </script>

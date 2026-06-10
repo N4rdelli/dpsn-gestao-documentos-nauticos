@@ -1,17 +1,59 @@
 ﻿@model dpsn_gestao_documentos_nauticos.Models.Documento
 
-<h2>Deletar Documento</h2>
+@{
+    ViewData["Title"] = "Deletar Registro Documental";
+}
 
-<h3>Tem certeza que deseja deletar este documento?</h3>
-<div>
-    <p><strong>Estaleiro:</strong> @Model.Estaleiro?.NomeFantasia</p>
-    <p><strong>Embarcação:</strong> @Model.Embarcacao?.Nome</p>
-    <p><strong>Cliente:</strong> @Model.Cliente?.Nome</p>
+<div class="mb-8">
+    <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Deletar Minuta Náutica</h1>
+    <p class="text-sm text-slate-500 mt-1">Remoção irrevogável do ciclo documental e metadados associados do banco de dados.</p>
 </div>
 
-<form asp-action="Delete" method="post">
+<div class="bg-rose-50 border-l-4 border-rose-500 p-5 rounded-r-xl mb-6 shadow-sm flex items-start space-x-3">
+    <svg class="w-6 h-6 text-rose-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+    </svg>
+    <div>
+        <h3 class="text-sm font-bold text-rose-900 uppercase tracking-wider">Atenção Extrema Requerida</h3>
+        <p class="text-xs text-rose-700 mt-1 leading-relaxed">
+            Esta operação apagará permanentemente a entidade documental, impedindo acessos futuros de estaleiros parceiros aos PDFs originais ou assinados vinculados.
+        </p>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl border border-slate-100 shadow-sm p-6 mb-6">
+    <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-3 mb-4">
+        Metadados Selecionados para Remoção
+    </h2>
+    <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 text-sm">
+        <div>
+            <dt class="text-xs font-semibold text-slate-400 uppercase">Estaleiro Vinculado</dt>
+            <dd class="text-slate-800 mt-0.5 font-medium">@(Model.Estaleiro?.NomeFantasia ?? "Não informado")</dd>
+        </div>
+        <div>
+            <dt class="text-xs font-semibold text-slate-400 uppercase">Embarcação Referência</dt>
+            <dd class="text-slate-800 mt-0.5">@(Model.Embarcacao?.Nome ?? "Não informada")</dd>
+        </div>
+        <div>
+            <dt class="text-xs font-semibold text-slate-400 uppercase">Armador / Cliente</dt>
+            <dd class="text-slate-800 mt-0.5 font-medium">@(Model.Cliente?.Nome ?? "Não informado")</dd>
+        </div>
+        <div>
+            <dt class="text-xs font-semibold text-slate-400 uppercase">Número de Inscrição</dt>
+            <dd class="text-slate-800 mt-0.5 font-mono text-xs">@Model.NumeroInscricao</dd>
+        </div>
+    </dl>
+</div>
+
+<form asp-action="Delete" method="post" class="flex items-center space-x-3">
     @Html.AntiForgeryToken()
     <input type="hidden" name="id" value="@Model.Id" />
-    <button type="submit" style="color: red;">Confirmar Deleção</button>
-    <a asp-action="Index">Cancelar</a>
+
+    <a asp-action="Index" class="px-5 py-2.5 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
+        Cancelar Operação
+    </a>
+    <button type="submit" class="px-5 py-2.5 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-lg shadow-sm hover:shadow transition-all flex items-center space-x-1.5">
+        <i class="fa-regular fa-trash-can text-xs"></i>
+        <span>Confirmar Deleção Irrevogável</span>
+    </button>
 </form>

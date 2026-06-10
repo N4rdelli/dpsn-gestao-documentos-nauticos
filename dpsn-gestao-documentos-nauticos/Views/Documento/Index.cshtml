@@ -1,84 +1,151 @@
 ﻿@model IEnumerable<dpsn_gestao_documentos_nauticos.Models.Documento>
+@using dpsn_gestao_documentos_nauticos.Models
+@using static dpsn_gestao_documentos_nauticos.Models.Documento
 
-<h2>Listagem de Documentos</h2>
+@{
+    ViewData["Title"] = "Gestão de Documentos Navais";
+    var isAdminOuTecnologo = User.IsInRole("Admin") || User.IsInRole("Tecnologo");
+}
+
+<div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Documentos Navais</h1>
+        <p class="text-sm text-slate-500">Gerencie o ciclo de emissão, revisão e assinaturas externas gov.br do ecossistema.</p>
+    </div>
+    @if (!User.IsInRole("Estaleiro"))
+    {
+        <div>
+            <a asp-action="Create" class="inline-flex items-center space-x-2 px-4 py-2.5 text-sm font-medium text-white bg-sky-700 hover:bg-sky-800 rounded-lg shadow-sm transition-all">
+                <i class="fa-solid fa-plus text-xs"></i>
+                <span>Novo Documento</span>
+            </a>
+        </div>
+    }
+</div>
 
 @if (TempData["MensagemSucesso"] != null)
 {
-    <p style="color: green;">@TempData["MensagemSucesso"]</p>
+    <div class="mb-6 p-4 bg-emerald-50 border-l-4 border-emerald-500 rounded-r-xl text-sm text-emerald-800 font-medium shadow-sm flex items-center gap-2">
+        <i class="fa-solid fa-circle-check text-emerald-500"></i>
+        @TempData["MensagemSucesso"]
+    </div>
 }
+
 @if (TempData["MensagemErro"] != null)
 {
-    <p style="color: red;">@TempData["MensagemErro"]</p>
+    <div class="mb-6 p-4 bg-rose-50 border-l-4 border-rose-500 rounded-r-xl text-sm text-rose-800 font-medium shadow-sm flex items-center gap-2">
+        <i class="fa-solid fa-circle-exclamation text-rose-500"></i>
+        @TempData["MensagemErro"]
+    </div>
 }
 
-<p>
-    <a href="/Documento/Create">Criar Novo Documento</a>
-    @if (User.IsInRole("Tecnologo") || User.IsInRole("Admin"))
-    {
-        <span> | </span> <a asp-action="EnviarLote" asp-controller="Documento">Enviar Lotes por E-mail</a>
-    }
-</p>
+<div class="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-sm">
+            <thead>
+                <tr class="bg-slate-50/75 border-b border-slate-100 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    <th class="px-6 py-4 text-center">Estaleiro</th>
+                    <th class="px-6 py-4 text-center">Embarcação</th>
+                    <th class="px-6 py-4 text-center">N° Inscrição</th>
+                    <th class="px-6 py-4 text-center">Data de Criação</th>
+                    <th class="px-6 py-4 text-center">Status do Documento</th>
+                    <th class="px-6 py-4 text-center">Data Assinatura</th>
+                    <th class="px-6 py-4 text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-slate-700">
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="px-6 py-10 text-center text-slate-400 font-medium">
+                            <i class="fa-regular fa-folder-open text-2xl block mb-2 text-slate-300"></i>
+                            Nenhum registro documental localizado.
+                        </td>
+                    </tr>
+                }
+                @foreach (var item in Model)
+                {
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="px-6 py-4 font-medium text-slate-900">
+                            @(item.Estaleiro?.RazaoSocial ?? "Não informado")
+                        </td>
+                        <td class="px-6 py-4">
+                            @(item.Embarcacao?.Nome ?? "Não informada")
+                        </td>
+                        <td class="px-6 py-4 font-mono text-xs">
+                            @item.NumeroInscricao
+                        </td>
+                        <td class="px-6 py-4">
+                            @item.DataCriacaoDocumento.ToString("dd/MM/yyyy HH:mm")
+                        </td>
+                        <td class="px-6 py-4">
+                            @if (item.Status == StatusDocumento.RevisaoPendente)
+                            {
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Revisão Pendente
+                                </span>
+                            }
+                            else if (item.Status == StatusDocumento.EmRevisao)
+                            {
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Em Revisão
+                                </span>
+                            }
+                            else if (item.Status == StatusDocumento.Assinado)
+                            {
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Assinado
+                                </span>
+                            }
+                        </td>
+                        <td class="px-6 py-4 text-slate-500">
+                            @(item.DataAssinatura.HasValue? item.DataAssinatura.Value.ToString("dd/MM/yyyy HH:mm") : "-")
+                        </td>
+                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                            <div class="inline-flex items-center space-x-1.5">
 
-<table border="1" cellpadding="5" cellspacing="0">
-    <thead>
-        <tr>
-            <th>Estaleiro</th>
-            <th>Embarcação</th>
-            <th>Cliente</th>
-            <th>Status Assinatura</th>
-            <th>Ações do Documento</th>
-            <th>Ações de PDF</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@item.Estaleiro?.NomeFantasia</td>
-                <td>@item.Embarcacao?.Nome</td>
-                <td>@item.Cliente?.Nome</td>
-                <td>@(item.StatusAssinatura ? "Assinado (True)" : "Pendente (False)")</td>
+                                @* Botão Dinâmico de Revisão / Detalhes *@
+                                @if (isAdminOuTecnologo)
+                                {
+                                    @if (item.Status == StatusDocumento.RevisaoPendente)
+                                    {
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-amber-700 hover:text-white bg-amber-50 hover:bg-amber-600 rounded-md border border-amber-200 hover:border-amber-600 transition-all shadow-sm" title="Iniciar Processo de Análise">
+                                            <i class="fa-solid fa-play text-[10px]"></i> Iniciar Revisão
+                                        </a>
+                                    }
+                                    else if (item.Status == StatusDocumento.EmRevisao)
+                                    {
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-blue-700 hover:text-white bg-blue-50 hover:bg-blue-600 rounded-md border border-blue-200 hover:border-blue-600 transition-all shadow-sm" title="Continuar Análise do Documento">
+                                            <i class="fa-solid fa-arrows-spin text-[10px] fa-spin-slow"></i> Continuar Revisão
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-slate-500 bg-slate-50 rounded-md border border-slate-200 cursor-not-allowed opacity-75" title="Revisão Concluída">
+                                            <i class="fa-solid fa-check-double text-[10px]"></i> Revisão Concluída
+                                        </a>
+                                    }
+                                }
+                                else
+                                {
+                                    @* Estaleiro vê apenas o olho de Detalhes Clássico *@
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="p-1.5 text-slate-400 hover:text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-md transition-colors" title="Visualizar Detalhes">
+                                        <i class="fa-regular fa-eye text-sm"></i>
+                                    </a>
+                                }
 
-                <td>
-                    <a asp-action="Details" asp-controller="Documento" asp-route-id="@item.Id" style="color: gray;">Details</a> |
-                    <a asp-action="Edit" asp-controller="Documento" asp-route-id="@item.Id" style="color: gray;">Edit</a> |
-                    <a asp-action="Delete" asp-controller="Documento" asp-route-id="@item.Id" style="color: gray;">Delete</a>
-                </td>
-
-                <td>
-                    @if (User.IsInRole("Estaleiro"))
-                    {
-                        @if (item.StatusAssinatura)
-                        {
-                            <a asp-action="DownloadPdfAssinado" asp-controller="Documento" asp-route-id="@item.Id" style="color: green; font-weight: bold;">Baixar PDF Assinado</a>
-                        }
-                        else
-                        {
-                            <span style="color: orange;">Aguardando Assinatura</span>
-                        }
-                    }
-                    else if (User.IsInRole("Tecnologo") || User.IsInRole("Admin"))
-                    {
-                        <a asp-action="DownloadMinuta" asp-controller="Documento" asp-route-id="@item.Id">1. Baixar Minuta</a>
-
-                        @if (!item.StatusAssinatura)
-                        {
-                            <span> | </span>
-                            <form asp-action="AssinarEReenviar" asp-controller="Documento" method="post" enctype="multipart/form-data" style="display:inline;">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="id" value="@item.Id" />
-                                <input type="file" name="arquivoPdf" accept=".pdf" required />
-                                <button type="submit">2. Reenviar PDF Assinado</button>
-                            </form>
-                        }
-                        else
-                        {
-                            <span> | </span>
-                            <a asp-action="DownloadPdfAssinado" asp-controller="Documento" asp-route-id="@item.Id" style="color: gray;">Arquivo Reenviado (Download)</a>
-                        }
-                    }
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+                                @* Botão de Download Seguro Extrapolado (Visível após assinatura e antes de 30 dias da criação) *@
+                                @if (item.Status == StatusDocumento.Assinado && item.DataCriacaoDocumento >= DateTime.UtcNow.AddDays(-30))
+                                {
+                                    <a asp-action="DownloadMinuta" asp-route-id="@item.Id" class="p-1.5 text-emerald-600 hover:text-white bg-emerald-50 hover:bg-emerald-600 rounded-md transition-colors" title="Baixar Documento Final Assinado">
+                                        <i class="fa-solid fa-download text-sm"></i>
+                                    </a>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
